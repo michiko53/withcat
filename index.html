@@ -19,7 +19,6 @@
 </head>
 <body class="bg-slate-100 text-slate-800 min-h-screen pb-24">
 
-    <!-- ヘッダー -->
     <header class="bg-teal-700 text-white shadow-md sticky top-0 z-50">
         <div class="max-w-md mx-auto px-3 py-2.5 flex justify-between items-center">
             <div class="flex items-center gap-2">
@@ -50,7 +49,6 @@
         </div>
     </header>
 
-    <!-- ナビゲーションタブ -->
     <nav class="bg-white shadow-sm border-b border-slate-200 sticky top-[76px] z-40">
         <div class="max-w-md mx-auto flex justify-around text-xs font-bold">
             <button onclick="switchTab('handover')" id="tab-handover" class="flex-1 py-3 text-center border-b-2 border-teal-600 text-teal-700 transition flex items-center justify-center gap-1">
@@ -266,7 +264,7 @@
     </div>
 
     <script>
-        // Firebase Public Config for Zero-setup Realtime Sync
+        // Firebase Public Config for Realtime Multi-User Sync
         const firebaseConfig = {
             databaseURL: "https://withcat-rescue-default-rtdb.firebaseio.com/"
         };
@@ -330,7 +328,7 @@
         let currentFilter = 'all';
         let base64PhotoBuffer = '';
 
-        // Firebaseリアルタイム同期リスナーの設定
+        // Firebaseリアルタイム双方向リスナー
         rootRef.on('value', (snapshot) => {
             const val = snapshot.val();
             if (val) {
@@ -338,7 +336,6 @@
                 if (val.handovers) state.handovers = val.handovers;
                 if (val.facility) state.facility = val.facility;
             } else {
-                // 初回起動時データ保存
                 rootRef.set(state);
             }
             renderAll();
@@ -615,7 +612,7 @@
         function updateCatField(id, field, val) {
             const cat = state.cats.find(c => c.id === id);
             if (cat) {
-                cat[field] = cat[field] === val ? '' : val; // タップでトグル解除可能
+                cat[field] = cat[field] === val ? '' : val;
                 saveToCloud();
                 showToast(`${cat.name}の状態を更新しました`);
             }
@@ -738,13 +735,15 @@
             }
         }
 
-        // --- LINE用レポートコピー ---
+        // --- LINE用レポートコピー (日付・いつの報告かが明確にわかる形式) ---
         function copyLineReport() {
             const careCats = state.cats.filter(c => c.status === 'care');
-            const unfedCats = state.cats.filter(c => !c.appetite || c.appetite === 'ー' || c.appetite === '');
+            const latestHandover = state.handovers.length > 0 ? state.handovers[0] : null;
+            const reportShift = latestHandover ? latestHandover.shift : '本日のシフト';
 
             let text = `🐾【WithCat引継ぎレポート】🐾\n`;
-            text += `📅 報告日: ${dateStringFormatted}\n\n`;
+            text += `📅 報告日: ${dateStringFormatted}\n`;
+            text += `⏰ 報告時間帯: ${reportShift}\n\n`;
 
             text += `【施設チェック】\n`;
             facilityItems.forEach(item => {
@@ -766,13 +765,12 @@
             if (state.handovers.length > 0) {
                 const recent = state.handovers.slice(0, 3);
                 recent.forEach(h => {
-                    text += `[${h.shift}] ${h.poster}さん: ${h.text} ${h.catLink ? '(対象:' + h.catLink + ')' : ''}\n`;
+                    text += `[${h.date} ${h.shift}] ${h.poster}さん: ${h.text} ${h.catLink ? '(対象:' + h.catLink + ')' : ''}\n`;
                 });
             } else {
                 text += `本日の申し送りはありません\n`;
             }
 
-            // コピー実行
             const textarea = document.createElement("textarea");
             textarea.value = text;
             document.body.appendChild(textarea);
