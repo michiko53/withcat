@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WithCat引継ぎアプリ（完全自動リアルタイム同期）</title>
+    <title>WithCat引継ぎアプリ</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></link>
     <!-- Firebase App & Realtime Database CDN -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
@@ -218,7 +218,7 @@
                     </div>
                     <div class="flex-1">
                         <label class="block text-[11px] font-bold text-slate-700 mb-1">猫ちゃんの写真</label>
-                        <input type="file" id="input-photo" accept="image/*" onchange="previewPhoto(event)" class="w-xs text-[10px] text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100">
+                        <input type="file" id="input-photo" accept="image/*" onchange="previewPhoto(event)" class="w-full text-[10px] text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100">
                     </div>
                 </div>
 
@@ -297,176 +297,171 @@
             { id: '13', name: 'ビー', gender: 'メス / キジ白', status: 'care', appetite: '△', stool: '未', health: '保護直後。', photo: '' },
             { id: '14', name: 'フク', gender: 'オス / 黒白', status: 'normal', appetite: '◎', stool: '良', health: '元気。', photo: '' },
             { id: '15', name: 'メイ', gender: 'メス / 三毛', status: 'normal', appetite: '◎', stool: '良', health: 'おだやか。', photo: '' },
-            { id: '16', name: 'キナコ', gender: 'メス / 茶トラ', status: 'normal', appetite: '◎', stool: '良', health: 'おだやか。', photo: '' },
-            { id: '17', name: 'アズキ', gender: 'メス / 茶トラ', status: 'normal', appetite: 'ー', stool: '未', health: '少し臆病。', photo: '' },
-            { id: '18', name: 'ジン', gender: 'オス / 黒', status: 'normal', appetite: '◎', stool: '良', health: '元気。', photo: '' },
-            { id: '19', name: 'リン', gender: 'メス / グレー', status: 'normal', appetite: '◎', stool: '良', health: '問題なし。', photo: '' },
-            { id: '20', name: 'ロン', gender: 'オス / キジ', status: 'normal', appetite: 'ー', stool: '良', health: 'シニア。', photo: '' },
-            { id: '21', name: 'ティアラ', gender: 'メス / 白', status: 'normal', appetite: '◎', stool: '良', health: 'ブラッシング好き。', photo: '' },
-            { id: '22', name: 'マロン', gender: 'オス / 茶白', status: 'normal', appetite: '◎', stool: '良', health: '食欲良好。', photo: '' },
-            { id: '23', name: 'ショコラ', gender: 'メス / サビ', status: 'normal', appetite: 'ー', stool: '未', health: '元気。', photo: '' },
-            { id: '24', name: 'プリン', gender: 'メス / クリーム', status: 'care', appetite: '◎', stool: '良', health: '優しく接してください。', photo: '' },
-            { id: '25', name: 'エース', gender: 'オス / 黒', status: 'normal', appetite: '◎', stool: '良', health: '元気。', photo: '' },
-            { id: '26', name: 'ルル', gender: 'メス / 三毛', status: 'normal', appetite: '◎', stool: '良', health: '良好。', photo: '' },
-            { id: '27', name: 'キラ', gender: 'オス / 白', status: 'care', appetite: '△', stool: '良', health: '環境変化で緊張気味。', photo: '' },
-            { id: '28', name: 'ユキ', gender: 'メs / 白', status: 'normal', appetite: '◎', stool: '良', health: '良好。', photo: '' },
-            { id: '29', name: 'ゴロウ', gender: 'オス / キジ', status: 'normal', appetite: '◎', stool: '良', health: 'おやつ完食。', photo: '' },
-            { id: '30', name: 'ハチ', gender: 'オス / 白黒', status: 'normal', appetite: '◎', stool: '良', health: '元気。', photo: '' }
+            { id: '16', name: 'キナコ', gender: 'メス / 茶トラ', status: 'normal', appetite: '◎', stool: '良', health: '人懐っこい。', photo: '' },
+            { id: '17', name: 'マル', gender: 'オス / 茶白', status: 'normal', appetite: '◎', stool: '良', health: '食欲旺盛。', photo: '' },
+            { id: '18', name: 'ルル', gender: 'メス / 黒', status: 'normal', appetite: '◎', stool: '良', health: '元気。', photo: '' },
+            { id: '19', name: 'タマ', gender: 'オス / 三毛', status: 'normal', appetite: '◎', stool: '良', health: 'おっとり。', photo: '' },
+            { id: '20', name: 'ソラ', gender: 'メス / 白', status: 'normal', appetite: '◎', stool: '良', health: '問題なし。', photo: '' },
+            { id: '21', name: 'ココ', gender: 'メス / キジ', status: 'normal', appetite: '◎', stool: '良', health: '良好。', photo: '' },
+            { id: '22', name: 'キジ', gender: 'オス / キジ', status: 'normal', appetite: '◎', stool: '良', health: '元気。', photo: '' },
+            { id: '23', name: 'チャ', gender: 'オス / 茶', status: 'normal', appetite: '◎', stool: '良', health: '良好。', photo: '' },
+            { id: '24', name: 'クロ', gender: 'オス / 黒', status: 'normal', appetite: '◎', stool: '良', health: '元気。', photo: '' },
+            { id: '25', name: 'シロ', gender: 'メス / 白', status: 'normal', appetite: '◎', stool: '良', health: 'おだやか。', photo: '' },
+            { id: '26', name: 'ミケ', gender: 'メス / 三毛', status: 'normal', appetite: '◎', stool: '良', health: '良好。', photo: '' },
+            { id: '27', name: 'トラ', gender: 'オス / トラ', status: 'normal', appetite: '◎', stool: '良', health: '元気。', photo: '' },
+            { id: '28', name: 'ハチ', gender: 'オス / ハチワレ', status: 'normal', appetite: '◎', stool: '良', health: '良好。', photo: '' },
+            { id: '29', name: 'スミ', gender: 'メス / 黒', status: 'normal', appetite: '◎', stool: '良', health: 'おだやか。', photo: '' },
+            { id: '30', name: 'ポン', gender: 'オス / 茶トラ', status: 'normal', appetite: '◎', stool: '良', health: '元気。', photo: '' }
         ];
 
-        let cats = defaultCats;
-        let handovers = [];
-        let facilityChecks = [
-            { id: 'clean', label: '掃除・消毒', done: true },
-            { id: 'water', label: '全室給水', done: true },
-            { id: 'trash', label: 'ゴミ回収', done: false },
-            { id: 'lock', label: '空調・戸締', done: false }
-        ];
-        let facilityStatus = '【物資連絡】猫砂ストック残り3袋 / エアコン25度稼働中';
+        let state = {
+            cats: defaultCats,
+            handovers: [],
+            facility: {
+                cleaning: false,
+                water: false,
+                trash: false,
+                temp: false,
+                memo: '猫砂・ペットシーツのストック十分です。'
+            }
+        };
+
+        let currentTab = 'handover';
         let currentFilter = 'all';
-        let tempPhotoBase64 = '';
+        let base64PhotoBuffer = '';
 
-        // Firebaseリアルタイムリスナーのセットアップ
+        // Firebaseリアルタイム同期リスナーの設定
         rootRef.on('value', (snapshot) => {
             const val = snapshot.val();
             if (val) {
-                if (val.cats) cats = val.cats;
-                if (val.handovers) handovers = val.handovers;
-                if (val.facilityChecks) facilityChecks = val.facilityChecks;
-                if (val.facilityStatus) facilityStatus = val.facilityStatus;
-                refreshAllUI();
+                if (val.cats) state.cats = val.cats;
+                if (val.handovers) state.handovers = val.handovers;
+                if (val.facility) state.facility = val.facility;
             } else {
-                // 初回のみデフォルトデータを書き込む
-                pushDataToCloud();
+                // 初回起動時データ保存
+                rootRef.set(state);
             }
+            renderAll();
+        }, (error) => {
+            console.error("Firebase sync error:", error);
         });
 
-        function pushDataToCloud() {
-            rootRef.set({
-                cats: cats,
-                handovers: handovers,
-                facilityChecks: facilityChecks,
-                facilityStatus: facilityStatus
-            });
+        function saveToCloud() {
+            rootRef.set(state);
         }
 
-        function showToast(msg) {
+        function switchTab(tab) {
+            currentTab = tab;
+            ['handover', 'cats', 'roster'].forEach(t => {
+                const el = document.getElementById(`view-${t}`);
+                const btn = document.getElementById(`tab-${t}`);
+                if (t === tab) {
+                    el.classList.remove('hidden');
+                    btn.className = "flex-1 py-3 text-center border-b-2 border-teal-600 text-teal-700 transition flex items-center justify-center gap-1 font-bold";
+                } else {
+                    el.classList.add('hidden');
+                    btn.className = "flex-1 py-3 text-center border-b-2 border-transparent text-slate-500 hover:text-teal-700 transition flex items-center justify-center gap-1 font-bold";
+                }
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showToast(msg = "同期しました") {
             const t = document.getElementById('toast');
             t.innerText = msg;
             t.classList.remove('hidden');
             setTimeout(() => t.classList.add('hidden'), 2000);
         }
 
-        function saveData() {
-            pushDataToCloud();
-            updateDashboardStats();
+        function renderAll() {
+            renderHeaderStats();
+            renderFacility();
             renderPriorityPreview();
-            populateCatSelect();
-        }
-
-        function refreshAllUI() {
-            updateDashboardStats();
-            renderFacilityToggles();
-            renderPriorityPreview();
-            populateCatSelect();
+            renderHandoverCatSelect();
             renderHandovers();
             renderCats();
             renderRoster();
         }
 
-        function updateDashboardStats() {
-            document.getElementById('stat-total').innerText = cats.length;
-            document.getElementById('stat-care').innerText = cats.filter(c => c.status === 'care').length;
-            document.getElementById('stat-fed').innerText = cats.filter(c => c.appetite && c.appetite !== 'ー').length;
+        function renderHeaderStats() {
+            document.getElementById('stat-total').innerText = state.cats.length;
+            const careCount = state.cats.filter(c => c.status === 'care').length;
+            document.getElementById('stat-care').innerText = careCount;
+            const fedCount = state.cats.filter(c => c.appetite && c.appetite !== 'ー' && c.appetite !== '').length;
+            document.getElementById('stat-fed').innerText = `${fedCount}/${state.cats.length}`;
         }
 
-        function renderFacilityToggles() {
+        // --- 施設チェック ---
+        const facilityItems = [
+            { key: 'cleaning', label: '🧹 掃除・消毒' },
+            { key: 'water', label: '💧 全室給水' },
+            { key: 'trash', label: '🗑️ ゴミ回収' },
+            { key: 'temp', label: '🌡️ 空調・戸締' }
+        ];
+
+        function renderFacility() {
             const container = document.getElementById('facility-toggles');
-            let html = '';
-            facilityChecks.forEach(item => {
-                const activeClass = item.done ? 'bg-teal-50 border-teal-500 text-teal-800' : 'bg-slate-50 border-slate-200 text-slate-400';
-                const icon = item.done ? 'fa-circle-check text-teal-600' : 'fa-circle text-slate-300';
-                html += `
-                    <button onclick="toggleFacilityCheck('${item.id}')" class="border rounded-lg p-1.5 flex flex-col items-center justify-center gap-0.5 transition ${activeClass}">
-                        <i class="fa-solid ${icon} text-xs"></i>
-                        <span>${item.label}</span>
+            container.innerHTML = facilityItems.map(item => {
+                const checked = state.facility[item.key];
+                return `
+                    <button onclick="toggleFacility('${item.key}')" class="py-2 px-1 rounded-lg border text-center transition ${checked ? 'bg-teal-600 text-white border-teal-600 shadow-xs' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'}">
+                        <div>${item.label}</div>
+                        <div class="text-[10px] mt-0.5 font-normal">${checked ? '完了✓' : '未'}</div>
                     </button>
                 `;
-            });
-            container.innerHTML = html;
-            document.getElementById('facility-summary-text').innerText = facilityStatus;
+            }).join('');
+            document.getElementById('facility-summary-text').innerText = `💬 施設メモ: ${state.facility.memo || 'なし'}`;
         }
 
-        function toggleFacilityCheck(id) {
-            facilityChecks = facilityChecks.map(f => f.id === id ? { ...f, done: !f.done } : f);
-            saveData();
-            renderFacilityToggles();
-        }
-
-        function renderPriorityPreview() {
-            const container = document.getElementById('priority-cats-preview');
-            const priorityCats = cats.filter(c => c.status === 'care');
-            if (priorityCats.length === 0) {
-                container.innerHTML = `<div class="text-xs text-slate-500 py-1">現在、様子見・ケア対象の猫はいません</div>`;
-                return;
-            }
-            let html = '';
-            priorityCats.forEach(c => {
-                const imgTag = c.photo 
-                    ? `<img src="${c.photo}" class="w-9 h-9 rounded-full object-cover border border-amber-300 shrink-0">` 
-                    : `<div class="w-9 h-9 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 text-xs shrink-0">🐱</div>`;
-                html += `
-                    <div onclick="openCatModal('${c.id}')" class="bg-white p-2.5 rounded-lg border border-amber-200 shadow-2xs shrink-0 w-44 cursor-pointer hover:border-amber-400 transition">
-                        <div class="flex items-center gap-2 mb-1">
-                            ${imgTag}
-                            <div class="overflow-hidden">
-                                <span class="font-bold text-xs text-slate-800 block truncate">${escapeHtml(c.name)}</span>
-                                <span class="bg-amber-500 text-white text-[9px] px-1 py-0.5 rounded font-bold">様子見</span>
-                            </div>
-                        </div>
-                        <p class="text-[10px] text-slate-500 mb-1">🍽️${c.appetite || 'ー'} 🚽${c.stool || '未'}</p>
-                        <p class="text-[11px] text-slate-700 line-clamp-1 bg-amber-50/50 p-1 rounded">${escapeHtml(c.health)}</p>
-                    </div>
-                `;
-            });
-            container.innerHTML = html;
-        }
-
-        function populateCatSelect() {
-            const sel = document.getElementById('handover-cat-link');
-            let html = '<option value="">🐾 対象猫(任意)</option>';
-            cats.forEach(c => {
-                html += `<option value="${escapeHtml(c.name)}">${escapeHtml(c.name)}</option>`;
-            });
-            sel.innerHTML = html;
-        }
-
-        function switchTab(tabName) {
-            ['handover', 'cats', 'roster'].forEach(t => {
-                document.getElementById('view-' + t).classList.add('hidden');
-                document.getElementById('tab-' + t).className = 'flex-1 py-3 text-center border-b-2 border-transparent text-slate-500 hover:text-teal-700 transition flex items-center justify-center gap-1';
-            });
-            document.getElementById('view-' + tabName).classList.remove('hidden');
-            document.getElementById('tab-' + tabName).className = 'flex-1 py-3 text-center border-b-2 border-teal-600 text-teal-700 transition font-bold flex items-center justify-center gap-1';
-
-            if (tabName === 'cats') renderCats();
-            if (tabName === 'roster') renderRoster();
+        function toggleFacility(key) {
+            state.facility[key] = !state.facility[key];
+            saveToCloud();
+            showToast("施設の状態を更新しました");
         }
 
         function openFacilityModal() {
-            document.getElementById('facility-input-text').value = facilityStatus;
+            document.getElementById('facility-input-text').value = state.facility.memo || '';
             document.getElementById('facility-modal').classList.remove('hidden');
         }
+
         function closeFacilityModal() {
             document.getElementById('facility-modal').classList.add('hidden');
         }
 
         function saveFacilityStatus() {
-            facilityStatus = document.getElementById('facility-input-text').value;
-            saveData();
-            renderFacilityToggles();
+            state.facility.memo = document.getElementById('facility-input-text').value;
+            saveToCloud();
             closeFacilityModal();
-            showToast('施設メモを更新しました');
+            showToast("施設メモを保存しました");
+        }
+
+        // --- 様子見ピックアップ ---
+        function renderPriorityPreview() {
+            const container = document.getElementById('priority-cats-preview');
+            const careCats = state.cats.filter(c => c.status === 'care');
+            if (careCats.length === 0) {
+                container.innerHTML = `<p class="text-[11px] text-amber-800 px-1 py-2">現在、様子見・ケア対象の猫ちゃんはいません ✨</p>`;
+                return;
+            }
+            container.innerHTML = careCats.map(cat => `
+                <div class="bg-white p-2 rounded-xl border border-amber-200 shrink-0 w-36 shadow-xs flex items-center gap-2">
+                    <div class="w-10 h-10 rounded-full bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center border border-amber-100">
+                        ${cat.photo ? `<img src="${cat.photo}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-cat text-amber-500"></i>`}
+                    </div>
+                    <div class="overflow-hidden">
+                        <div class="font-bold text-xs truncate text-slate-800">${cat.name}</div>
+                        <div class="text-[10px] text-amber-700 truncate">${cat.health || '要ケア'}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // --- シフト申し送り ---
+        function renderHandoverCatSelect() {
+            const sel = document.getElementById('handover-cat-link');
+            const currentVal = sel.value;
+            sel.innerHTML = `<option value="">🐾 対象猫(任意)</option>` + state.cats.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
+            sel.value = currentVal;
         }
 
         function addHandover(e) {
@@ -474,220 +469,216 @@
             const shift = document.getElementById('handover-shift').value;
             const poster = document.getElementById('poster-name').value;
             const category = document.getElementById('handover-category').value;
-            const catName = document.getElementById('handover-cat-link').value;
+            const catLink = document.getElementById('handover-cat-link').value;
             const text = document.getElementById('handover-text').value;
-            const now = new Date();
-            const timeStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-            const newPost = { id: Date.now().toString(), dateStr: dateStringFormatted, shift, poster, category, catName, text, time: timeStr, checks: 0 };
-            handovers.unshift(newPost);
-            saveData();
+            const newPost = {
+                id: Date.now().toString(),
+                date: dateStringFormatted,
+                shift,
+                poster,
+                category,
+                catLink,
+                text,
+                time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+                reads: 0
+            };
 
+            state.handovers.unshift(newPost);
+            saveToCloud();
             document.getElementById('handover-text').value = '';
             document.getElementById('handover-cat-link').value = '';
-            renderHandovers();
-            showToast('申し送りを登録しました');
-        }
-
-        function checkHandover(id) {
-            handovers = handovers.map(h => h.id === id ? { ...h, checks: (h.checks || 0) + 1 } : h);
-            saveData();
-            renderHandovers();
-        }
-
-        function deleteHandover(id) {
-            handovers = handovers.filter(h => h.id !== id);
-            saveData();
-            renderHandovers();
-            showToast('投稿を削除しました');
+            showToast("申し送りを登録しました");
         }
 
         function renderHandovers() {
-            const list = document.getElementById('handover-list');
-            if (handovers.length === 0) {
-                list.innerHTML = `<div class="text-center py-6 text-slate-400 text-xs bg-white rounded-xl border border-slate-200">まだ申し送り投稿はありません</div>`;
+            const container = document.getElementById('handover-list');
+            if (!state.handovers || state.handovers.length === 0) {
+                container.innerHTML = `<div class="bg-white p-6 rounded-xl text-center text-slate-400 text-xs border border-slate-200">まだ本日の申し送りはありません。上のフォームから投稿してください。</div>`;
                 return;
             }
-            let html = '';
-            handovers.forEach(h => {
-                let badgeColor = 'bg-slate-100 text-slate-700';
-                if (h.category.includes('猫') || h.category.includes('体調')) badgeColor = 'bg-amber-100 text-amber-800';
-                if (h.category.includes('譲渡')) badgeColor = 'bg-emerald-100 text-emerald-800';
-                if (h.category.includes('施設')) badgeColor = 'bg-sky-100 text-sky-800';
 
-                html += `
-                    <div class="bg-white p-3 rounded-xl shadow-2xs border border-slate-200 space-y-1.5">
-                        <div class="flex justify-between items-center text-xs">
-                            <div class="flex items-center gap-1.5 flex-wrap">
-                                <span class="bg-slate-100 text-slate-700 border border-slate-200 px-1.5 py-0.5 rounded text-[10px] font-bold"><i class="fa-regular fa-calendar mr-1"></i>${escapeHtml(h.dateStr || dateStringFormatted)}</span>
-                                <span class="bg-teal-50 text-teal-800 border border-teal-200 px-1.5 py-0.5 rounded text-[10px] font-bold">${escapeHtml(h.shift)}</span>
-                                <span class="font-bold text-slate-800">${escapeHtml(h.poster)}</span>
-                                <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${badgeColor}">${escapeHtml(h.category)}</span>
-                            </div>
-                            <span class="text-slate-400 text-[10px]">${h.time}</span>
+            container.innerHTML = state.handovers.map(item => `
+                <div class="bg-white p-3 rounded-xl shadow-xs border border-slate-200 space-y-1.5">
+                    <div class="flex justify-between items-center text-[11px]">
+                        <div class="flex items-center gap-1.5">
+                            <span class="bg-teal-50 text-teal-700 font-bold px-2 py-0.5 rounded">${item.shift}</span>
+                            <span class="bg-slate-100 text-slate-600 px-2 py-0.5 rounded">${item.category}</span>
+                            ${item.catLink ? `<span class="bg-amber-50 text-amber-800 font-bold px-2 py-0.5 rounded">🐱 ${item.catLink}</span>` : ''}
                         </div>
-                        <div class="text-xs text-slate-700 leading-relaxed">
-                            ${h.catName ? `<span class="inline-block bg-amber-100 text-amber-900 font-bold text-[10px] px-1.5 py-0.5 rounded mr-1"><i class="fa-solid fa-paw mr-0.5"></i>${escapeHtml(h.catName)}</span>` : ''}
-                            <span>${escapeHtml(h.text)}</span>
-                        </div>
-                        <div class="flex justify-between items-center pt-1 border-t border-slate-100">
-                            <button onclick="checkHandover('${h.id}')" class="text-[11px] bg-slate-100 hover:bg-teal-50 text-slate-600 hover:text-teal-700 font-semibold px-2.5 py-1 rounded-full transition flex items-center gap-1">
-                                <i class="fa-solid fa-thumbs-up text-teal-600"></i> 確認済 (${h.checks || 0})
-                            </button>
-                            <button onclick="deleteHandover('${h.id}')" class="text-[10px] text-slate-400 hover:text-rose-600 px-1"><i class="fa-solid fa-trash-can"></i></button>
-                        </div>
+                        <span class="text-slate-400">${item.date} ${item.time}</span>
                     </div>
-                `;
-            });
-            list.innerHTML = html;
+                    <p class="text-xs text-slate-800 whitespace-pre-wrap leading-relaxed font-medium">${item.text}</p>
+                    <div class="flex justify-between items-center pt-1 border-t border-slate-100 text-[11px] text-slate-500">
+                        <span>担当: <strong>${item.poster}</strong></span>
+                        <button onclick="addRead('${item.id}')" class="text-teal-700 hover:text-teal-800 font-bold flex items-center gap-1 bg-teal-50 hover:bg-teal-100 px-2.5 py-1 rounded-lg transition">
+                            <i class="fa-solid fa-check"></i> 確認済 (${item.reads || 0})
+                        </button>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        const appetiteOrder = ['◎', '△', '×', 'ー'];
-        function cycleAppetite(catId) {
-            cats = cats.map(c => {
-                if (c.id === catId) {
-                    const idx = appetiteOrder.indexOf(c.appetite || 'ー');
-                    return { ...c, appetite: appetiteOrder[(idx + 1) % appetiteOrder.length] };
-                }
-                return c;
-            });
-            saveData();
-            renderCats();
+        function addRead(id) {
+            const target = state.handovers.find(h => h.id === id);
+            if (target) {
+                target.reads = (target.reads || 0) + 1;
+                saveToCloud();
+                showToast("確認しました");
+            }
         }
 
-        const stoolOrder = ['良', '軟', '下', '未'];
-        function cycleStool(catId) {
-            cats = cats.map(c => {
-                if (c.id === catId) {
-                    const idx = stoolOrder.indexOf(c.stool || '未');
-                    return { ...c, stool: stoolOrder[(idx + 1) % stoolOrder.length] };
-                }
-                return c;
-            });
-            saveData();
-            renderCats();
-        }
-
-        function setFilter(filterType) {
-            currentFilter = filterType;
+        // --- お世話カルテ (30頭) ---
+        function setFilter(filter) {
+            currentFilter = filter;
             ['all', 'care', 'unfed'].forEach(f => {
-                const btn = document.getElementById('filter-' + f);
-                if (btn) {
-                    btn.className = (f === filterType)
-                        ? 'px-3 py-1 rounded-full bg-teal-600 text-white shrink-0 transition font-bold'
-                        : 'px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0 transition font-bold';
+                const btn = document.getElementById(`filter-${f}`);
+                if (f === filter) {
+                    btn.className = "px-3 py-1 rounded-full bg-teal-600 text-white shrink-0 transition font-bold";
+                } else {
+                    btn.className = "px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-slate-200 shrink-0 transition font-bold";
                 }
             });
             renderCats();
         }
 
         function renderCats() {
-            const query = (document.getElementById('cat-search').value || '').toLowerCase();
-            const list = document.getElementById('cats-list');
+            const keyword = document.getElementById('cat-search').value.toLowerCase();
+            const container = document.getElementById('cats-list');
 
-            const filtered = cats.filter(c => {
-                const matchesQuery = c.name.toLowerCase().includes(query) || (c.gender && c.gender.toLowerCase().includes(query));
-                if (!matchesQuery) return false;
+            let filtered = state.cats.filter(c => {
+                const matchKeyword = c.name.toLowerCase().includes(keyword) || (c.gender && c.gender.toLowerCase().includes(keyword)) || (c.health && c.health.toLowerCase().includes(keyword));
+                if (!matchKeyword) return false;
                 if (currentFilter === 'care') return c.status === 'care';
-                if (currentFilter === 'unfed') return c.appetite === 'ー';
+                if (currentFilter === 'unfed') return !c.appetite || c.appetite === 'ー';
                 return true;
             });
 
             document.getElementById('filtered-count-label').innerText = `${filtered.length}頭表示中`;
 
             if (filtered.length === 0) {
-                list.innerHTML = `<div class="text-center py-8 text-slate-400 text-xs bg-white rounded-xl border border-slate-200">猫ちゃんが見つかりません</div>`;
+                container.innerHTML = `<div class="bg-white p-6 rounded-xl text-center text-slate-400 text-xs border border-slate-200">条件に一致する猫ちゃんがいません。</div>`;
                 return;
             }
 
-            let html = '';
-            filtered.forEach(c => {
-                let cardBorder = 'border-slate-200';
-                let statusBadge = `<span class="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded">元気</span>`;
-                if (c.status === 'care') {
-                    cardBorder = 'border-amber-300 bg-amber-50/20';
-                    statusBadge = `<span class="bg-amber-500 text-white text-[10px] font-bold px-2 py-0.5 rounded">様子見</span>`;
-                }
-
-                let appColor = 'bg-slate-100 text-slate-600 border-slate-200';
-                if (c.appetite === '◎') appColor = 'bg-emerald-50 text-emerald-700 border-emerald-300';
-                if (c.appetite === '△') appColor = 'bg-amber-50 text-amber-700 border-amber-300';
-                if (c.appetite === '×') appColor = 'bg-rose-50 text-rose-700 border-rose-300';
-
-                let stoolColor = 'bg-slate-100 text-slate-600 border-slate-200';
-                if (c.stool === '良') stoolColor = 'bg-emerald-50 text-emerald-700 border-emerald-300';
-                if (c.stool === '軟') stoolColor = 'bg-amber-50 text-amber-700 border-amber-300';
-                if (c.stool === '下') stoolColor = 'bg-rose-50 text-rose-700 border-rose-300';
-
-                const avatarHtml = c.photo 
-                    ? `<img src="${c.photo}" class="w-11 h-11 rounded-full object-cover border border-slate-300 shrink-0">`
-                    : `<div class="w-11 h-11 rounded-full bg-slate-200 flex items-center justify-center text-slate-400 text-base shrink-0"><i class="fa-solid fa-cat"></i></div>`;
-
-                html += `
-                    <div class="bg-white p-3 rounded-xl shadow-2xs border ${cardBorder} space-y-2">
-                        <div class="flex justify-between items-center gap-2">
-                            <div class="flex items-center gap-2.5">
-                                ${avatarHtml}
-                                <div>
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="font-bold text-slate-800 text-sm">${escapeHtml(c.name)}</span>
-                                        ${statusBadge}
-                                    </div>
-                                    <p class="text-[11px] text-slate-400">${escapeHtml(c.gender || '特徴未設定')}</p>
-                                </div>
-                            </div>
-                            <button onclick="openCatModal('${c.id}')" class="text-slate-400 hover:text-teal-600 px-2 py-1 text-xs border border-slate-200 rounded-lg bg-slate-50">
-                                <i class="fa-solid fa-pen"></i> 編集
-                            </button>
-                        </div>
-
-                        <div class="flex items-center gap-2 pt-0.5">
-                            <button onclick="cycleAppetite('${c.id}')" class="border rounded-lg px-3 py-1 text-[11px] font-bold transition ${appColor}">
-                                🍽️ 食欲: ${c.appetite || 'ー'}
-                            </button>
-                            <button onclick="cycleStool('${c.id}')" class="border rounded-lg px-3 py-1 text-[11px] font-bold transition ${stoolColor}">
-                                🚽 便: ${c.stool || '未'}
-                            </button>
-                        </div>
-
-                        <div class="text-xs text-slate-700 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100">
-                            <strong class="text-slate-500">メモ:</strong> ${escapeHtml(c.health || '特記事項なし')}
-                        </div>
-                    </div>
-                `;
-            });
-            list.innerHTML = html;
-        }
-
-        function renderRoster() {
-            const list = document.getElementById('roster-list');
-            let html = '';
-            cats.forEach((c, idx) => {
-                const avatarHtml = c.photo 
-                    ? `<img src="${c.photo}" class="w-10 h-10 rounded-full object-cover border border-slate-300 shrink-0">`
-                    : `<div class="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center text-slate-400 text-sm shrink-0"><i class="fa-solid fa-cat"></i></div>`;
-
-                html += `
-                    <div class="bg-white p-2.5 rounded-xl border border-slate-200 flex justify-between items-center">
+            container.innerHTML = filtered.map(cat => `
+                <div class="bg-white p-3 rounded-xl shadow-xs border border-slate-200 space-y-2.5">
+                    <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2.5">
-                            ${avatarHtml}
+                            <div class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center border border-slate-200 shrink-0">
+                                ${cat.photo ? `<img src="${cat.photo}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-cat text-slate-400 text-lg"></i>`}
+                            </div>
                             <div>
                                 <div class="flex items-center gap-1.5">
-                                    <span class="text-xs text-slate-400 font-bold">#${idx+1}</span>
-                                    <span class="font-bold text-slate-800 text-xs">${escapeHtml(c.name)}</span>
-                                    <span class="text-[10px] text-slate-500">(${escapeHtml(c.gender || '-')})</span>
+                                    <h3 class="font-bold text-slate-800 text-sm">${cat.name}</h3>
+                                    <span class="text-[10px] px-2 py-0.5 rounded-full font-bold ${cat.status === 'care' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">
+                                        ${cat.status === 'care' ? '🟡 様子見' : '🟢 元気'}
+                                    </span>
                                 </div>
-                                <p class="text-[10px] text-slate-500 truncate max-w-[200px]">${escapeHtml(c.health || 'メモなし')}</p>
+                                <p class="text-[10px] text-slate-500">${cat.gender || '情報なし'}</p>
                             </div>
                         </div>
-                        <div class="flex gap-1">
-                            <button onclick="openCatModal('${c.id}')" class="bg-slate-100 hover:bg-slate-200 text-slate-600 text-[11px] px-2.5 py-1.5 rounded-lg font-bold">編集</button>
-                            <button onclick="deleteCat('${c.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] px-2 py-1.5 rounded-lg"><i class="fa-solid fa-trash"></i></button>
+                        <button onclick="openCatModal('${cat.id}')" class="text-slate-400 hover:text-teal-700 p-1.5 rounded-lg hover:bg-slate-50 transition text-xs font-semibold flex items-center gap-1">
+                            <i class="fa-solid fa-pen"></i> 編集
+                        </button>
+                    </div>
+
+                    <!-- ごはん・トイレのクイックボタン -->
+                    <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100 text-[11px]">
+                        <div class="bg-slate-50 p-2 rounded-lg border border-slate-100 flex items-center justify-between">
+                            <span class="font-bold text-slate-600"><i class="fa-solid fa-bowl-food text-teal-600 mr-1"></i>食欲</span>
+                            <div class="flex gap-1">
+                                ${['◎', '△', '×'].map(val => `
+                                    <button onclick="updateCatField('${cat.id}', 'appetite', '${val}')" class="w-6 h-6 rounded font-bold transition text-[10px] ${cat.appetite === val ? 'bg-teal-600 text-white shadow-xs' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}">${val}</button>
+                                `).join('')}
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 p-2 rounded-lg border border-slate-100 flex items-center justify-between">
+                            <span class="font-bold text-slate-600"><i class="fa-solid fa-poop text-amber-700 mr-1"></i>トイレ</span>
+                            <div class="flex gap-1">
+                                ${['良', '軟', '下'].map(val => `
+                                    <button onclick="updateCatField('${cat.id}', 'stool', '${val}')" class="w-6 h-6 rounded font-bold transition text-[10px] ${cat.stool === val ? 'bg-amber-600 text-white shadow-xs' : 'bg-white text-slate-600 border border-slate-200 hover:bg-slate-100'}">${val}</button>
+                                `).join('')}
+                            </div>
                         </div>
                     </div>
-                `;
-            });
-            list.innerHTML = html;
+
+                    ${cat.health ? `
+                        <div class="bg-teal-50/50 p-2 rounded-lg border border-teal-100 text-[11px] text-teal-900">
+                            <strong><i class="fa-solid fa-circle-info mr-1 text-teal-600"></i>メモ:</strong> ${cat.health}
+                        </div>
+                    ` : ''}
+                </div>
+            `).join('');
+        }
+
+        function updateCatField(id, field, val) {
+            const cat = state.cats.find(c => c.id === id);
+            if (cat) {
+                cat[field] = cat[field] === val ? '' : val; // タップでトグル解除可能
+                saveToCloud();
+                showToast(`${cat.name}の状態を更新しました`);
+            }
+        }
+
+        // --- 在籍名簿管理 ---
+        function renderRoster() {
+            const container = document.getElementById('roster-list');
+            container.innerHTML = state.cats.map(cat => `
+                <div class="bg-white p-3 rounded-xl shadow-xs border border-slate-200 flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center border border-slate-200 shrink-0">
+                            ${cat.photo ? `<img src="${cat.photo}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-cat text-slate-400"></i>`}
+                        </div>
+                        <div>
+                            <div class="flex items-center gap-1.5">
+                                <h4 class="font-bold text-xs text-slate-800">${cat.name}</h4>
+                                <span class="text-[9px] px-1.5 py-0.5 rounded font-bold ${cat.status === 'care' ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}">
+                                    ${cat.status === 'care' ? '様子見' : '元気'}
+                                </span>
+                            </div>
+                            <p class="text-[10px] text-slate-500">${cat.gender || '性別未設定'} / 食欲:${cat.appetite || '未'} / 便:${cat.stool || '未'}</p>
+                        </div>
+                    </div>
+                    <div class="flex gap-1">
+                        <button onclick="openCatModal('${cat.id}')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs px-2.5 py-1.5 rounded-lg font-bold transition">編集</button>
+                        <button onclick="deleteCat('${cat.id}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs px-2 py-1.5 rounded-lg font-bold transition"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function openCatModal(id = null) {
+            document.getElementById('cat-modal').classList.remove('hidden');
+            document.getElementById('input-photo').value = '';
+            base64PhotoBuffer = '';
+
+            if (id) {
+                document.getElementById('modal-title').innerText = '猫カルテ・情報編集';
+                const cat = state.cats.find(c => c.id === id);
+                document.getElementById('cat-id').value = cat.id;
+                document.getElementById('input-name').value = cat.name;
+                document.getElementById('input-status').value = cat.status || 'normal';
+                document.getElementById('input-gender').value = cat.gender || '';
+                document.getElementById('input-health').value = cat.health || '';
+                base64PhotoBuffer = cat.photo || '';
+                
+                const box = document.getElementById('photo-preview-box');
+                if (cat.photo) {
+                    box.innerHTML = `<img src="${cat.photo}" class="w-full h-full object-cover">`;
+                } else {
+                    box.innerHTML = `<i class="fa-solid fa-cat text-slate-400 text-xl"></i>`;
+                }
+            } else {
+                document.getElementById('modal-title').innerText = '新規猫ちゃんの追加';
+                document.getElementById('cat-id').value = '';
+                document.getElementById('cat-form').reset();
+                document.getElementById('photo-preview-box').innerHTML = `<i class="fa-solid fa-cat text-slate-400 text-xl"></i>`;
+            }
+        }
+
+        function closeCatModal() {
+            document.getElementById('cat-modal').classList.add('hidden');
         }
 
         function previewPhoto(event) {
@@ -695,42 +686,11 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    tempPhotoBase64 = e.target.result;
-                    document.getElementById('photo-preview-box').innerHTML = `<img src="${tempPhotoBase64}" class="w-full h-full object-cover">`;
-                };
+                    base64PhotoBuffer = e.target.result;
+                    document.getElementById('photo-preview-box').innerHTML = `<img src="${base64PhotoBuffer}" class="w-full h-full object-cover">`;
+                }
                 reader.readAsDataURL(file);
             }
-        }
-
-        function openCatModal(catId = null) {
-            document.getElementById('cat-modal').classList.remove('hidden');
-            tempPhotoBase64 = '';
-            if (catId) {
-                const cat = cats.find(c => c.id === catId);
-                if (cat) {
-                    document.getElementById('modal-title').innerText = '猫情報・カルテ編集';
-                    document.getElementById('cat-id').value = cat.id;
-                    document.getElementById('input-name').value = cat.name;
-                    document.getElementById('input-status').value = cat.status === 'care' ? 'care' : 'normal';
-                    document.getElementById('input-gender').value = cat.gender || '';
-                    document.getElementById('input-health').value = cat.health || '';
-                    tempPhotoBase64 = cat.photo || '';
-                    if (cat.photo) {
-                        document.getElementById('photo-preview-box').innerHTML = `<img src="${cat.photo}" class="w-full h-full object-cover">`;
-                    } else {
-                        document.getElementById('photo-preview-box').innerHTML = `<i class="fa-solid fa-cat text-slate-400 text-xl"></i>`;
-                    }
-                }
-            } else {
-                document.getElementById('modal-title').innerText = '新規猫ちゃんの登録';
-                document.getElementById('cat-form').reset();
-                document.getElementById('cat-id').value = '';
-                document.getElementById('photo-preview-box').innerHTML = `<i class="fa-solid fa-cat text-slate-400 text-xl"></i>`;
-            }
-        }
-
-        function closeCatModal() {
-            document.getElementById('cat-modal').classList.add('hidden');
         }
 
         function saveCat(e) {
@@ -742,94 +702,85 @@
             const health = document.getElementById('input-health').value;
 
             if (id) {
-                cats = cats.map(c => c.id === id ? { ...c, name, status, gender, health, photo: tempPhotoBase64 || c.photo } : c);
+                const cat = state.cats.find(c => c.id === id);
+                if (cat) {
+                    cat.name = name;
+                    cat.status = status;
+                    cat.gender = gender;
+                    cat.health = health;
+                    if (base64PhotoBuffer) cat.photo = base64PhotoBuffer;
+                }
+                showToast("猫カルテを更新しました");
             } else {
-                const newCat = { 
-                    id: Date.now().toString(), name, status, gender, 
-                    appetite: 'ー', stool: '未', health, photo: tempPhotoBase64 
+                const newCat = {
+                    id: Date.now().toString(),
+                    name,
+                    status,
+                    gender,
+                    health,
+                    appetite: '◎',
+                    stool: '良',
+                    photo: base64PhotoBuffer
                 };
-                cats.push(newCat);
+                state.cats.push(newCat);
+                showToast("新しい猫ちゃんを追加しました");
             }
-            saveData();
+
+            saveToCloud();
             closeCatModal();
-            renderCats();
-            renderRoster();
-            showToast('猫情報をクラウドに保存しました');
         }
 
         function deleteCat(id) {
-            if (confirm('この猫ちゃんの名簿データを削除しますか？')) {
-                cats = cats.filter(c => c.id !== id);
-                saveData();
-                renderCats();
-                renderRoster();
-                showToast('削除しました');
+            if (confirm("本当にこの猫ちゃんの名簿データを削除しますか？")) {
+                state.cats = state.cats.filter(c => c.id !== id);
+                saveToCloud();
+                showToast("猫ちゃんを削除しました");
             }
         }
 
+        // --- LINE用レポートコピー ---
         function copyLineReport() {
-            let text = `【WithCat引継ぎレポート (${dateStringFormatted})】\n\n`;
+            const careCats = state.cats.filter(c => c.status === 'care');
+            const unfedCats = state.cats.filter(c => !c.appetite || c.appetite === 'ー' || c.appetite === '');
 
-            text += `■ 施設・物資状況\n`;
-            facilityChecks.forEach(f => {
-                text += `${f.done ? '☑' : '□'} ${f.label}\n`;
+            let text = `🐾【WithCat引継ぎレポート】🐾\n`;
+            text += `📅 報告日: ${dateStringFormatted}\n\n`;
+
+            text += `【施設チェック】\n`;
+            facilityItems.forEach(item => {
+                text += `- ${item.label.replace(/^[^\s]+\s/, '')}: ${state.facility[item.key] ? '完了✓' : '未'}\n`;
             });
-            text += `メモ: ${facilityStatus}\n\n`;
+            text += `💬 施設メモ: ${state.facility.memo || 'なし'}\n\n`;
 
-            const careCats = cats.filter(c => c.status === 'care');
-            text += `■ 本日の様子見・ケア対象 (${careCats.length}頭)\n`;
-            if (careCats.length === 0) {
-                text += `特になし\n`;
-            } else {
+            text += `【本日の様子見・ケア猫 (${careCats.length}頭)】\n`;
+            if (careCats.length > 0) {
                 careCats.forEach(c => {
-                    text += `・${c.name} (食欲:${c.appetite || 'ー'} / 便:${c.stool || '未'})\n`;
-                    text += `  メモ:${c.health || 'なし'}\n`;
+                    text += `- ${c.name} (${c.gender || '特徴なし'}): ${c.health || '要ケア'}\n`;
                 });
+            } else {
+                text += `特になし\n`;
             }
             text += `\n`;
 
-            text += `■ シフト申し送り事項\n`;
-            if (handovers.length === 0) {
-                text += `特になし\n`;
-            } else {
-                handovers.slice(0, 3).forEach(h => {
-                    text += `[${h.dateStr || dateStringFormatted} ${h.shift}] ${h.poster} (${h.time})\n`;
-                    if(h.catName) text += `対象: ${h.catName}\n`;
-                    text += `${h.text}\n---\n`;
-                });
-            }
-            text += `\n（WithCat引継ぎアプリ）`;
-
-            if (navigator.clipboard && navigator.clipboard.writeText) {
-                navigator.clipboard.writeText(text).then(() => {
-                    showToast('LINE用レポートをコピーしました！');
-                }).catch(() => {
-                    fallbackCopyText(text);
+            text += `【直近のシフト申し送り】\n`;
+            if (state.handovers.length > 0) {
+                const recent = state.handovers.slice(0, 3);
+                recent.forEach(h => {
+                    text += `[${h.shift}] ${h.poster}さん: ${h.text} ${h.catLink ? '(対象:' + h.catLink + ')' : ''}\n`;
                 });
             } else {
-                fallbackCopyText(text);
+                text += `本日の申し送りはありません\n`;
             }
-        }
 
-        function fallbackCopyText(text) {
+            // コピー実行
             const textarea = document.createElement("textarea");
             textarea.value = text;
-            textarea.style.position = "fixed";
             document.body.appendChild(textarea);
-            textarea.focus();
             textarea.select();
-            try {
-                document.execCommand('copy');
-                showToast('LINE用レポートをコピーしました！');
-            } catch (err) {
-                showToast('コピーに失敗しました');
-            }
+            document.execCommand("copy");
             document.body.removeChild(textarea);
-        }
 
-        function escapeHtml(str) {
-            if (!str) return '';
-            return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+            showToast("📋 LINE用レポートをコピーしました！");
         }
     </script>
 </body>
