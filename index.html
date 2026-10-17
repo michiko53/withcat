@@ -6,6 +6,7 @@
     <title>WithCat引継ぎアプリ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></link>
+    <!-- Firebase App & Database Compat SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
@@ -266,7 +267,7 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const rootRef = db.ref('withcat_shared_v10_unified_room');
+        const rootRef = db.ref('withcat_shared_live_master_v99');
 
         const today = new Date();
         const days = ['日', '月', '火', '水', '木', '金', '土'];
@@ -323,35 +324,38 @@
         let currentTab = 'handover';
         let currentFilter = 'all';
         let base64PhotoBuffer = '';
+        let isRemoteUpdate = false;
 
-        // Firebaseリアルタイムリスナー & ローカル保護救出機能
+        // Firebaseリアルタイム双方向リスナー
         rootRef.on('value', (snapshot) => {
             const val = snapshot.val();
             if (val && val.cats && val.cats.length > 0) {
-                state.cats = val.cats;
-                if (val.handovers) state.handovers = val.handovers;
-                if (val.facility) state.facility = val.facility;
+                isRemoteUpdate = true;
+                state = val;
+                if (!state.handovers) state.handovers = [];
+                renderAll();
+                isRemoteUpdate = false;
             } else {
-                // クラウドが空または未初期化の場合、ローカルストレージのデータを救出してクラウドに保存
-                const localData = localStorage.getItem('withcat_local_backup');
+                // 初回あるいはデータが空の場合、ローカルストレージのデータまたはデフォルトをクラウドへ設定
+                const localData = localStorage.getItem('withcat_persistent_backup');
                 if (localData) {
                     try {
                         const parsed = JSON.parse(localData);
-                        if (parsed.cats && parsed.cats.length > 0) {
+                        if (parsed && parsed.cats && parsed.cats.length > 0) {
                             state = parsed;
                         }
                     } catch(e) {}
                 }
                 rootRef.set(state);
+                renderAll();
             }
-            renderAll();
         }, (error) => {
             console.error("Firebase sync error:", error);
         });
 
         function saveToCloud() {
-            // ローカルにも常時バックアップ保存
-            localStorage.setItem('withcat_local_backup', JSON.stringify(state));
+            if (isRemoteUpdate) return;
+            localStorage.setItem('withcat_persistent_backup', JSON.stringify(state));
             rootRef.set(state).catch(err => {
                 console.error("Save to cloud failed:", err);
                 showToast("クラウド保存エラー。再試行してください");
@@ -410,7 +414,7 @@
         function renderFacility() {
             const container = document.getElementById('facility-toggles');
             container.innerHTML = facilityItems.map(item => {
-                const checked = state.facility[item.key];
+                const checked = state.facility && state.facility[item.key];
                 return `
                     <button onclick="toggleFacility('${item.key}')" class="py-2 px-1 rounded-lg border text-center transition ${checked ? 'bg-teal-600 text-white border-teal-600 shadow-xs' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'}">
                         <div>${item.label}</div>
@@ -418,17 +422,18 @@
                     </button>
                 `;
             }).join('');
-            document.getElementById('facility-summary-text').innerText = `💬 施設メモ: ${state.facility.memo || 'なし'}`;
+            document.getElementById('facility-summary-text').innerText = `💬 施設メモ: ${state.facility && state.facility.memo ? state.facility.memo : 'なし'}`;
         }
 
         function toggleFacility(key) {
+            if (!state.facility) state.facility = {};
             state.facility[key] = !state.facility[key];
             saveToCloud();
             showToast("施設の状態を更新しました");
         }
 
         function openFacilityModal() {
-            document.getElementById('facility-input-text').value = state.facility.memo || '';
+            document.getElementById('facility-input-text').value = state.facility && state.facility.memo ? state.facility.memo : '';
             document.getElementById('facility-modal').classList.remove('hidden');
         }
 
@@ -437,6 +442,7 @@
         }
 
         function saveFacilityStatus() {
+            if (!state.facility) state.facility = {};
             state.facility.memo = document.getElementById('facility-input-text').value;
             saveToCloud();
             closeFacilityModal();
@@ -479,6 +485,8 @@
             const category = document.getElementById('handover-category').value;
             const catLink = document.getElementById('handover-cat-link').value;
             const text = document.getElementById('handover-text').value;
+
+            if (!state.handovers) state.handovers = [];
 
             const newPost = {
                 id: Date.now().toString(),
@@ -749,7 +757,7 @@
         // --- LINE用レポートコピー ---
         function copyLineReport() {
             const careCats = state.cats.filter(c => c.status === 'care');
-            const latestHandover = state.handovers.length > 0 ? state.handovers[0] : null;
+            const latestHandover = state.handovers && state.handovers.length > 0 ? state.handovers[0] : null;
             const reportShift = latestHandover ? latestHandover.shift : '本日のシフト';
 
             let text = `🐾【WithCat引継ぎレポート】🐾\n`;
@@ -758,9 +766,9 @@
 
             text += `【施設チェック】\n`;
             facilityItems.forEach(item => {
-                text += `- ${item.label.replace(/^[^\s]+\s/, '')}: ${state.facility[item.key] ? '完了✓' : '未'}\n`;
+                text += `- ${item.label.replace(/^[^\s]+\s/, '')}: ${state.facility && state.facility[item.key] ? '完了✓' : '未'}\n`;
             });
-            text += `💬 施設メモ: ${state.facility.memo || 'なし'}\n\n`;
+            text += `💬 施設メモ: ${state.facility && state.facility.memo ? state.facility.memo : 'なし'}\n\n`;
 
             text += `【本日の様子見・ケア猫 (${careCats.length}頭)】\n`;
             if (careCats.length > 0) {
@@ -773,7 +781,7 @@
             text += `\n`;
 
             text += `【直近のシフト申し送り】\n`;
-            if (state.handovers.length > 0) {
+            if (state.handovers && state.handovers.length > 0) {
                 const recent = state.handovers.slice(0, 3);
                 recent.forEach(h => {
                     text += `[${h.date} ${h.shift}] ${h.poster}さん: ${h.text} ${h.catLink ? '(対象:' + h.catLink + ')' : ''}\n`;
