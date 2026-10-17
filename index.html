@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WithCat引継ぎアプリ</title>
+    <title>WithCat引継ぎアプリ (スプレッドシート連携版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></link>
     <style>
@@ -24,15 +24,15 @@
                     <h1 class="font-bold text-sm sm:text-base leading-tight">WithCat引継ぎアプリ</h1>
                     <p class="text-[10px] text-teal-100 flex items-center gap-1">
                         <span id="sync-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
-                        <span id="current-date-display">クラウド同期稼働中</span>
+                        <span id="current-date-display">スプレッドシート自動同期中</span>
                     </p>
                 </div>
             </div>
             <div class="flex gap-1.5">
-                <button onclick="syncNow()" class="bg-amber-600 hover:bg-amber-500 text-[11px] px-2.5 py-1.5 rounded-lg font-bold transition flex items-center gap-1 shadow-xs" title="手動で最新データを完全同期">
-                    <i class="fa-solid fa-rotate"></i>同期
+                <button onclick="fetchData()" class="bg-amber-600 hover:bg-amber-500 text-[11px] px-2.5 py-1.5 rounded-lg font-bold transition flex items-center gap-1 shadow-xs" title="最新データを取得">
+                    <i class="fa-solid fa-rotate"></i>更新
                 </button>
-                <button onclick="copyLineReport()" class="bg-emerald-600 hover:bg-emerald-500 text-[11px] px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1 shadow-xs" title="LINEにそのまま貼れる形式でコピー">
+                <button onclick="copyLineReport()" class="bg-emerald-600 hover:bg-emerald-500 text-[11px] px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1 shadow-xs">
                     <i class="fa-solid fa-clipboard-user"></i>LINE用
                 </button>
             </div>
@@ -64,6 +64,13 @@
     <!-- トースト通知 -->
     <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-4 py-2.5 rounded-full shadow-lg z-50 hidden transition-opacity">
         同期しました
+    </div>
+
+    <!-- ローディングオーバーレイ -->
+    <div id="loading-overlay" class="fixed inset-0 bg-black/30 backdrop-blur-xs z-50 flex items-center justify-center hidden">
+        <div class="bg-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 text-xs font-bold text-slate-700">
+            <i class="fa-solid fa-spinner animate-spin text-teal-600 text-base"></i> スプレッドシートと通信中...
+        </div>
     </div>
 
     <main class="max-w-md mx-auto p-3 space-y-3">
@@ -170,7 +177,7 @@
             </div>
 
             <div class="text-[11px] text-slate-500 px-1 flex justify-between items-center">
-                <span>※全員の変更がリアルタイムに反映されます</span>
+                <span>※全員の変更がスプレッドシートに保存されます</span>
                 <span id="filtered-count-label">0頭表示中</span>
             </div>
 
@@ -184,7 +191,7 @@
             <div class="bg-white p-3.5 rounded-xl shadow-xs border border-slate-200 flex justify-between items-center">
                 <div>
                     <h2 class="font-bold text-slate-800 text-xs"><i class="fa-solid fa-address-book text-teal-600 mr-1"></i>在籍猫名簿のマスタ管理</h2>
-                    <p class="text-[10px] text-slate-500">猫ちゃんの追加・削除・写真や情報の登録を行います</p>
+                    <p class="text-[10px] text-slate-500">猫ちゃんの追加・削除・情報の登録を行います</p>
                 </div>
                 <button onclick="openCatModal()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs px-3 py-2 rounded-lg font-bold shadow-xs transition flex items-center gap-1 shrink-0">
                     <i class="fa-solid fa-plus"></i> 新規猫を追加
@@ -208,16 +215,6 @@
             <form id="cat-form" onsubmit="saveCat(event)" class="space-y-3">
                 <input type="hidden" id="cat-id">
                 
-                <div class="flex items-center gap-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
-                    <div id="photo-preview-box" class="w-14 h-14 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center shrink-0 border border-slate-300">
-                        <i class="fa-solid fa-cat text-slate-400 text-xl"></i>
-                    </div>
-                    <div class="flex-1">
-                        <label class="block text-[11px] font-bold text-slate-700 mb-1">猫ちゃんの写真</label>
-                        <input type="file" id="input-photo" accept="image/*" onchange="previewPhoto(event)" class="w-full text-[10px] text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100">
-                    </div>
-                </div>
-
                 <div class="grid grid-cols-3 gap-2">
                     <div class="col-span-2">
                         <label class="block text-[11px] font-bold text-slate-600 mb-1">名前 *</label>
@@ -265,94 +262,76 @@
         const today = new Date();
         const days = ['日', '月', '火', '水', '木', '金', '土'];
         const dateStringFormatted = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日(${days[today.getDay()]})`;
-        document.getElementById('current-date-display').innerText = `${dateStringFormatted} 同期システム稼働中`;
+        document.getElementById('current-date-display').innerText = `${dateStringFormatted} スプレッドシート同期中`;
         document.getElementById('form-current-datetime').innerText = `${dateStringFormatted}`;
 
-        const defaultCats = [
-            { id: '1', name: 'みけ美', gender: 'メス / 三毛', status: 'care', appetite: '◎', stool: '良', health: '右目少し涙目なのでコットンで拭いてあげてください。', photo: '' },
-            { id: '2', name: 'チャチャ', gender: 'オス / 茶トラ', status: 'care', appetite: '△', stool: '良', health: '少し警戒心あり。ウェットトッピングで完食。', photo: '' },
-            { id: '3', name: 'レオ', gender: 'オス / 黒猫', status: 'normal', appetite: '◎', stool: '良', health: '元気いっぱい。', photo: '' },
-            { id: '4', name: 'ハナ', gender: 'メス / 白黒', status: 'care', appetite: '△', stool: '軟', health: '少し軟便ぎみなので便の状態を確認お願いします。', photo: '' },
-            { id: '5', name: 'コタロー', gender: 'オス / キジ', status: 'normal', appetite: '◎', stool: '良', health: 'ウェットフード大好き。', photo: '' },
-            { id: '6', name: 'サクラ', gender: 'メス / サビ', status: 'normal', appetite: '◎', stool: '良', health: '落ち着いています。', photo: '' },
-            { id: '7', name: 'モモ', gender: 'メs / 白茶', status: 'normal', appetite: '◎', stool: '良', health: '問題なし。', photo: '' },
-            { id: '8', name: 'ソラ', gender: 'オス / グレー', status: 'normal', appetite: '◎', stool: '良', health: '食欲旺盛。', photo: '' },
-            { id: '9', name: 'ナッツ', gender: 'オス / 茶白', status: 'normal', appetite: '◎', stool: '良', health: '仲良く遊んでいます。', photo: '' },
-            { id: '10', name: 'ラテ', gender: 'メス / クリーム', status: 'care', appetite: '◎', stool: '良', health: '体調管理中。', photo: '' },
-            { id: '11', name: 'クッキー', gender: 'オス / サバ', status: 'normal', appetite: '◎', stool: '良', health: 'ドライフード良好。', photo: '' },
-            { id: '12', name: 'シロ', gender: 'オス / 白', status: 'care', appetite: '◎', stool: '軟', health: '便チェック継続。', photo: '' },
-            { id: '13', name: 'ビー', gender: 'メス / キジ白', status: 'care', appetite: '△', stool: '未', health: '保護直後。', photo: '' },
-            { id: '14', name: 'フク', gender: 'オス / 黒白', status: 'normal', appetite: '◎', stool: '良', health: '元気。', photo: '' },
-            { id: '15', name: 'メイ', gender: 'メス / 三毛', status: 'normal', appetite: '◎', stool: '良', health: 'おだやか。', photo: '' },
-            { id: '16', name: 'キナコ', gender: 'メス / 茶トラ', status: 'normal', appetite: '◎', stool: '良', health: '人懐っこい。', photo: '' },
-            { id: '17', name: 'マル', gender: 'オス / 茶白', status: 'normal', appetite: '◎', stool: '良', health: '食欲旺盛。', photo: '' },
-            { id: '18', name: 'ルル', gender: 'メス / 黒', status: 'normal', appetite: '◎', stool: '良', health: '元気。', photo: '' },
-            { id: '19', name: 'タマ', gender: 'オス / 三毛', status: 'normal', appetite: '◎', stool: '良', health: 'おっとり。', photo: '' },
-            { id: '20', name: 'ソラ', gender: 'メス / 白', status: 'normal', appetite: '◎', stool: '良', health: '問題なし。', photo: '' },
-            { id: '21', name: 'ココ', gender: 'メス / キジ', status: 'normal', appetite: '◎', stool: '良', health: '良好。', photo: '' },
-            { id: '22', name: 'キジ', gender: 'オス / キジ', status: 'normal', appetite: '◎', stool: '良', health: '元気。', photo: '' },
-            { id: '23', name: 'チャ', gender: 'オス / 茶', status: 'normal', appetite: '◎', stool: '良', health: '良好。', photo: '' },
-            { id: '24', name: 'クロ', gender: 'オス / 黒', status: 'normal', appetite: '◎', stool: '良', health: '元気。', photo: '' },
-            { id: '25', name: 'シロ', gender: 'メス / 白', status: 'normal', appetite: '◎', stool: '良', health: 'おだやか。', photo: '' },
-            { id: '26', name: 'ミケ', gender: 'メス / 三毛', status: 'normal', appetite: '◎', stool: '良', health: '良好。', photo: '' },
-            { id: '27', name: 'トラ', gender: 'オス / トラ', status: 'normal', appetite: '◎', stool: '良', health: '元気。', photo: '' },
-            { id: '28', name: 'ハチ', gender: 'オス / ハチワレ', status: 'normal', appetite: '◎', stool: '良', health: '良好。', photo: '' },
-            { id: '29', name: 'スミ', gender: 'メス / 黒', status: 'normal', appetite: '◎', stool: '良', health: 'おだやか。', photo: '' },
-            { id: '30', name: 'ポン', gender: 'オス / 茶トラ', status: 'normal', appetite: '◎', stool: '良', health: '元気。', photo: '' }
-        ];
+        // あなたのGASウェブアプリのURL（ハードコード済）
+        const GAS_URL = 'https://script.google.com/macros/s/AKfycbzC1OA7WKhXKf2aoqWvnyHeJkHlK2MsQGbaPPu3KlePs06m66QZTURKv7LiN8WSmRwX/exec';
 
         let state = {
-            cats: defaultCats,
+            cats: [],
             handovers: [],
-            facility: {
-                cleaning: false,
-                water: false,
-                trash: false,
-                temp: false,
-                memo: '猫砂・ペットシーツのストック十分です。'
-            }
+            facility: { cleaning: false, water: false, trash: false, temp: false, memo: '猫砂・ペットシーツ十分です。' }
         };
-
-        const STORAGE_KEY = 'withcat_shared_master_data_v2026';
-
-        function loadState() {
-            const saved = localStorage.getItem(STORAGE_KEY);
-            if (saved) {
-                try {
-                    const parsed = JSON.parse(saved);
-                    if (parsed && parsed.cats && parsed.cats.length > 0) {
-                        state = parsed;
-                    }
-                } catch(e) {}
-            }
-        }
-
-        function saveState() {
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-            // 変更時即座に自動同期シグナル
-            localStorage.setItem(STORAGE_KEY + '_time', Date.now().toString());
-        }
-
-        loadState();
-
-        // 別端末や別画面での変更を即時検知するリスナー
-        window.addEventListener('storage', (e) => {
-            if (e.key === STORAGE_KEY || e.key === STORAGE_KEY + '_time') {
-                loadState();
-                renderAll();
-                showToast("最新データに同期しました！");
-            }
-        });
-
-        function syncNow() {
-            loadState();
-            renderAll();
-            showToast("同期を完了しました");
-        }
 
         let currentTab = 'handover';
         let currentFilter = 'all';
-        let base64PhotoBuffer = '';
+
+        // 初期ロード時自動取得
+        window.onload = function() {
+            fetchData();
+        };
+
+        function showLoading(show) {
+            document.getElementById('loading-overlay').classList.toggle('hidden', !show);
+        }
+
+        function showToast(msg = "同期しました") {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.remove('hidden');
+            setTimeout(() => t.classList.add('hidden'), 2000);
+        }
+
+        // --- GASからのデータ取得 ---
+        async function fetchData() {
+            if (!GAS_URL) return;
+            showLoading(true);
+            try {
+                const res = await fetch(GAS_URL + "?action=getData");
+                const json = await res.json();
+                if (json && json.success) {
+                    state = json.data;
+                    renderAll();
+                    showToast("最新データを取得しました");
+                }
+            } catch (e) {
+                console.error(e);
+                showToast("データ取得に失敗しました");
+            } finally {
+                showLoading(false);
+            }
+        }
+
+        // --- GASへのデータ保存 ---
+        async function saveDataToSheets() {
+            if (!GAS_URL) return;
+            showLoading(true);
+            try {
+                await fetch(GAS_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'saveData', data: state })
+                });
+                showToast("スプレッドシートに保存しました");
+            } catch (e) {
+                console.error(e);
+                showToast("保存エラー");
+            } finally {
+                showLoading(false);
+            }
+        }
 
         function switchTab(tab) {
             currentTab = tab;
@@ -368,13 +347,6 @@
                 }
             });
             window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function showToast(msg = "同期しました") {
-            const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.classList.remove('hidden');
-            setTimeout(() => t.classList.add('hidden'), 2000);
         }
 
         function renderAll() {
@@ -395,7 +367,6 @@
             document.getElementById('stat-fed').innerText = `${fedCount}/${state.cats.length}`;
         }
 
-        // --- 施設チェック ---
         const facilityItems = [
             { key: 'cleaning', label: '🧹 掃除・消毒' },
             { key: 'water', label: '💧 全室給水' },
@@ -420,9 +391,8 @@
         function toggleFacility(key) {
             if (!state.facility) state.facility = {};
             state.facility[key] = !state.facility[key];
-            saveState();
             renderAll();
-            showToast("施設の状態を更新しました");
+            saveDataToSheets();
         }
 
         function openFacilityModal() {
@@ -437,13 +407,11 @@
         function saveFacilityStatus() {
             if (!state.facility) state.facility = {};
             state.facility.memo = document.getElementById('facility-input-text').value;
-            saveState();
             renderAll();
             closeFacilityModal();
-            showToast("施設メモを保存しました");
+            saveDataToSheets();
         }
 
-        // --- 様子見ピックアップ ---
         function renderPriorityPreview() {
             const container = document.getElementById('priority-cats-preview');
             const careCats = state.cats.filter(c => c.status === 'care');
@@ -454,7 +422,7 @@
             container.innerHTML = careCats.map(cat => `
                 <div class="bg-white p-2 rounded-xl border border-amber-200 shrink-0 w-36 shadow-xs flex items-center gap-2">
                     <div class="w-10 h-10 rounded-full bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center border border-amber-100">
-                        ${cat.photo ? `<img src="${cat.photo}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-cat text-amber-500"></i>`}
+                        <i class="fa-solid fa-cat text-amber-500"></i>
                     </div>
                     <div class="overflow-hidden">
                         <div class="font-bold text-xs truncate text-slate-800">${cat.name}</div>
@@ -464,7 +432,6 @@
             `).join('');
         }
 
-        // --- シフト申し送り ---
         function renderHandoverCatSelect() {
             const sel = document.getElementById('handover-cat-link');
             const currentVal = sel.value;
@@ -495,17 +462,16 @@
             };
 
             state.handovers.unshift(newPost);
-            saveState();
             renderAll();
             document.getElementById('handover-text').value = '';
             document.getElementById('handover-cat-link').value = '';
-            showToast("申し送りを登録しました");
+            saveDataToSheets();
         }
 
         function renderHandovers() {
             const container = document.getElementById('handover-list');
             if (!state.handovers || state.handovers.length === 0) {
-                container.innerHTML = `<div class="bg-white p-6 rounded-xl text-center text-slate-400 text-xs border border-slate-200">まだ本日の申し送りはありません。上のフォームから投稿してください。</div>`;
+                container.innerHTML = `<div class="bg-white p-6 rounded-xl text-center text-slate-400 text-xs border border-slate-200">まだ本日の申し送りはありません。</div>`;
                 return;
             }
 
@@ -534,13 +500,11 @@
             const target = state.handovers.find(h => h.id === id);
             if (target) {
                 target.reads = (target.reads || 0) + 1;
-                saveState();
                 renderAll();
-                showToast("確認しました");
+                saveDataToSheets();
             }
         }
 
-        // --- お世話カルテ ---
         function setFilter(filter) {
             currentFilter = filter;
             ['all', 'care', 'unfed'].forEach(f => {
@@ -578,7 +542,7 @@
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2.5">
                             <div class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center border border-slate-200 shrink-0">
-                                ${cat.photo ? `<img src="${cat.photo}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-cat text-slate-400 text-lg"></i>`}
+                                <i class="fa-solid fa-cat text-slate-400 text-lg"></i>
                             </div>
                             <div>
                                 <div class="flex items-center gap-1.5">
@@ -595,7 +559,6 @@
                         </button>
                     </div>
 
-                    <!-- ごはん・トイレのクイックボタン -->
                     <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100 text-[11px]">
                         <div class="bg-slate-50 p-2 rounded-lg border border-slate-100 flex items-center justify-between">
                             <span class="font-bold text-slate-600"><i class="fa-solid fa-bowl-food text-teal-600 mr-1"></i>食欲</span>
@@ -628,20 +591,18 @@
             const cat = state.cats.find(c => c.id === id);
             if (cat) {
                 cat[field] = cat[field] === val ? '' : val;
-                saveState();
                 renderAll();
-                showToast(`${cat.name}の状態を更新しました`);
+                saveDataToSheets();
             }
         }
 
-        // --- 在籍名簿管理 ---
         function renderRoster() {
             const container = document.getElementById('roster-list');
             container.innerHTML = state.cats.map(cat => `
                 <div class="bg-white p-3 rounded-xl shadow-xs border border-slate-200 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center border border-slate-200 shrink-0">
-                            ${cat.photo ? `<img src="${cat.photo}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-cat text-slate-400"></i>`}
+                            <i class="fa-solid fa-cat text-slate-400"></i>
                         </div>
                         <div>
                             <div class="flex items-center gap-1.5">
@@ -663,9 +624,6 @@
 
         function openCatModal(id = null) {
             document.getElementById('cat-modal').classList.remove('hidden');
-            document.getElementById('input-photo').value = '';
-            base64PhotoBuffer = '';
-
             if (id) {
                 document.getElementById('modal-title').innerText = '猫カルテ・情報編集';
                 const cat = state.cats.find(c => c.id === id);
@@ -674,36 +632,15 @@
                 document.getElementById('input-status').value = cat.status || 'normal';
                 document.getElementById('input-gender').value = cat.gender || '';
                 document.getElementById('input-health').value = cat.health || '';
-                base64PhotoBuffer = cat.photo || '';
-                
-                const box = document.getElementById('photo-preview-box');
-                if (cat.photo) {
-                    box.innerHTML = `<img src="${cat.photo}" class="w-full h-full object-cover">`;
-                } else {
-                    box.innerHTML = `<i class="fa-solid fa-cat text-slate-400 text-xl"></i>`;
-                }
             } else {
                 document.getElementById('modal-title').innerText = '新規猫ちゃんの追加';
                 document.getElementById('cat-id').value = '';
                 document.getElementById('cat-form').reset();
-                document.getElementById('photo-preview-box').innerHTML = `<i class="fa-solid fa-cat text-slate-400 text-xl"></i>`;
             }
         }
 
         function closeCatModal() {
             document.getElementById('cat-modal').classList.add('hidden');
-        }
-
-        function previewPhoto(event) {
-            const file = event.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    base64PhotoBuffer = e.target.result;
-                    document.getElementById('photo-preview-box').innerHTML = `<img src="${base64PhotoBuffer}" class="w-full h-full object-cover">`;
-                }
-                reader.readAsDataURL(file);
-            }
         }
 
         function saveCat(e) {
@@ -721,9 +658,7 @@
                     cat.status = status;
                     cat.gender = gender;
                     cat.health = health;
-                    if (base64PhotoBuffer) cat.photo = base64PhotoBuffer;
                 }
-                showToast("猫カルテを更新しました");
             } else {
                 const newCat = {
                     id: Date.now().toString(),
@@ -732,28 +667,24 @@
                     gender,
                     health,
                     appetite: '◎',
-                    stool: '良',
-                    photo: base64PhotoBuffer
+                    stool: '良'
                 };
                 state.cats.push(newCat);
-                showToast("新しい猫ちゃんを追加しました");
             }
 
-            saveState();
             renderAll();
             closeCatModal();
+            saveDataToSheets();
         }
 
         function deleteCat(id) {
             if (confirm("本当にこの猫ちゃんの名簿データを削除しますか？")) {
                 state.cats = state.cats.filter(c => c.id !== id);
-                saveState();
                 renderAll();
-                showToast("猫ちゃんを削除しました");
+                saveDataToSheets();
             }
         }
 
-        // --- LINE用レポートコピー ---
         function copyLineReport() {
             const careCats = state.cats.filter(c => c.status === 'care');
             const latestHandover = state.handovers && state.handovers.length > 0 ? state.handovers[0] : null;
@@ -798,9 +729,6 @@
 
             showToast("📋 LINE用レポートをコピーしました！");
         }
-
-        // 初期描画
-        renderAll();
     </script>
 </body>
 </html>
