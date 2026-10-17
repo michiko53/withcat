@@ -29,7 +29,7 @@
                     <h1 class="font-bold text-sm sm:text-base leading-tight">WithCat引継ぎアプリ</h1>
                     <p class="text-[10px] text-teal-100 flex items-center gap-1">
                         <span id="sync-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
-                        <span id="current-date-display">自動同期中...</span>
+                        <span id="current-date-display">リアルタイム同期中...</span>
                     </p>
                 </div>
             </div>
@@ -275,7 +275,7 @@
         const today = new Date();
         const days = ['日', '月', '火', '水', '木', '金', '土'];
         const dateStringFormatted = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日(${days[today.getDay()]})`;
-        document.getElementById('current-date-display').innerText = `${dateStringFormatted} 自動同期中`;
+        document.getElementById('current-date-display').innerText = `${dateStringFormatted} リアルタイム同期中`;
         document.getElementById('form-current-datetime').innerText = `${dateStringFormatted}`;
 
         // 初期30頭データ
@@ -525,7 +525,7 @@
             }
         }
 
-        // --- お世話カルテ (30頭) ---
+        // --- お世話カルテ ---
         function setFilter(filter) {
             currentFilter = filter;
             ['all', 'care', 'unfed'].forEach(f => {
@@ -735,7 +735,7 @@
             }
         }
 
-        // --- LINE用レポートコピー (日付・いつの報告かが明確にわかる形式) ---
+        // --- LINE用レポートコピー ---
         function copyLineReport() {
             const careCats = state.cats.filter(c => c.status === 'care');
             const latestHandover = state.handovers.length > 0 ? state.handovers[0] : null;
