@@ -23,13 +23,13 @@
                 <div>
                     <h1 class="font-bold text-sm sm:text-base leading-tight">WithCat引継ぎアプリ</h1>
                     <p class="text-[10px] text-teal-100 flex items-center gap-1">
-                        <span id="sync-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
-                        <span id="current-date-display">スプレッドシート自動同期中</span>
+                        <span id="sync-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
+                        <span id="current-date-display">スプレッドシート連携版</span>
                     </p>
                 </div>
             </div>
             <div class="flex gap-1.5">
-                <button onclick="fetchData()" class="bg-amber-600 hover:bg-amber-500 text-[11px] px-2.5 py-1.5 rounded-lg font-bold transition flex items-center gap-1 shadow-xs" title="最新データを取得">
+                <button onclick="syncWithSheets()" class="bg-amber-600 hover:bg-amber-500 text-[11px] px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1 shadow-xs" title="スプレッドシートとデータを同期">
                     <i class="fa-solid fa-rotate"></i>更新
                 </button>
                 <button onclick="copyLineReport()" class="bg-emerald-600 hover:bg-emerald-500 text-[11px] px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1 shadow-xs">
@@ -144,7 +144,7 @@
                             class="w-2/3 text-xs px-3 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500">
                     </div>
                     <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 rounded-lg text-xs transition shadow-xs flex items-center justify-center gap-1">
-                        <i class="fa-solid fa-paper-plane"></i> 申し送りを登録する
+                        <i class="fa-solid fa-paper-plane"></i> 申し送りを登録する（「更新」で保存）
                     </button>
                 </form>
             </div>
@@ -177,7 +177,7 @@
             </div>
 
             <div class="text-[11px] text-slate-500 px-1 flex justify-between items-center">
-                <span>※全員の変更がスプレッドシートに保存されます</span>
+                <span>※上部の「更新」ボタンでスプレッドシートと同期します</span>
                 <span id="filtered-count-label">0頭表示中</span>
             </div>
 
@@ -191,7 +191,7 @@
             <div class="bg-white p-3.5 rounded-xl shadow-xs border border-slate-200 flex justify-between items-center">
                 <div>
                     <h2 class="font-bold text-slate-800 text-xs"><i class="fa-solid fa-address-book text-teal-600 mr-1"></i>在籍猫名簿のマスタ管理</h2>
-                    <p class="text-[10px] text-slate-500">猫ちゃんの追加・削除・情報の登録を行います</p>
+                    <p class="text-[10px] text-slate-500">猫ちゃんの追加・削除・写真の登録を行います</p>
                 </div>
                 <button onclick="openCatModal()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs px-3 py-2 rounded-lg font-bold shadow-xs transition flex items-center gap-1 shrink-0">
                     <i class="fa-solid fa-plus"></i> 新規猫を追加
@@ -215,6 +215,17 @@
             <form id="cat-form" onsubmit="saveCat(event)" class="space-y-3">
                 <input type="hidden" id="cat-id">
                 
+                <!-- 写真アップロード -->
+                <div class="flex items-center gap-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
+                    <div id="photo-preview-box" class="w-14 h-14 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center shrink-0 border border-slate-300">
+                        <i class="fa-solid fa-cat text-slate-400 text-xl"></i>
+                    </div>
+                    <div class="flex-1">
+                        <label class="block text-[11px] font-bold text-slate-700 mb-1">猫ちゃんの写真</label>
+                        <input type="file" id="input-photo" accept="image/*" onchange="previewPhoto(event)" class="w-full text-[10px] text-slate-500 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[10px] file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100">
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-3 gap-2">
                     <div class="col-span-2">
                         <label class="block text-[11px] font-bold text-slate-600 mb-1">名前 *</label>
@@ -238,7 +249,7 @@
                 </div>
                 <div class="flex gap-2 pt-2">
                     <button type="button" onclick="closeCatModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2.5 rounded-xl text-xs transition">キャンセル</button>
-                    <button type="submit" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-sm">保存する</button>
+                    <button type="submit" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-sm">保存する（「更新」で同期）</button>
                 </div>
             </form>
         </div>
@@ -262,24 +273,66 @@
         const today = new Date();
         const days = ['日', '月', '火', '水', '木', '金', '土'];
         const dateStringFormatted = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日(${days[today.getDay()]})`;
-        document.getElementById('current-date-display').innerText = `${dateStringFormatted} スプレッドシート同期中`;
+        document.getElementById('current-date-display').innerText = `${dateStringFormatted} スプレッドシート連携`;
         document.getElementById('form-current-datetime').innerText = `${dateStringFormatted}`;
 
-        // あなたのGASウェブアプリのURL（ハードコード済）
+        // お客様専用のGASウェブアプリURL（ハードコード済）
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbzC1OA7WKhXKf2aoqWvnyHeJkHlK2MsQGbaPPu3KlePs06m66QZTURKv7LiN8WSmRwX/exec';
 
+        // 初期デフォルトデータ（30頭）
+        const defaultCats = [
+            { id: '1', name: 'みけ美', gender: 'メス / 三毛', status: 'care', appetite: '◎', stool: '良', health: '右目少し涙目', photo: '' },
+            { id: '2', name: 'チャチャ', gender: 'オス / 茶トラ', status: 'care', appetite: '△', stool: '良', health: '少し警戒心あり', photo: '' },
+            { id: '3', name: 'レオ', gender: 'オス / 黒猫', status: 'normal', appetite: '◎', stool: '良', health: '元気いっぱい', photo: '' },
+            { id: '4', name: 'ハナ', gender: 'メス / 白黒', status: 'care', appetite: '△', stool: '軟', health: '少し軟便ぎみ', photo: '' },
+            { id: '5', name: 'コタロー', gender: 'オス / キジ', status: 'normal', appetite: '◎', stool: '良', health: 'ウェット大好き', photo: '' },
+            { id: '6', name: 'サクラ', gender: 'メス / サビ', status: 'normal', appetite: '◎', stool: '良', health: '落ち着いています', photo: '' },
+            { id: '7', name: 'モモ', gender: 'メス / 白茶', status: 'normal', appetite: '◎', stool: '良', health: '問題なし', photo: '' },
+            { id: '8', name: 'ソラ', gender: 'オス / グレー', status: 'normal', appetite: '◎', stool: '良', health: '食欲旺盛', photo: '' },
+            { id: '9', name: 'ナッツ', gender: 'オス / 茶白', status: 'normal', appetite: '◎', stool: '良', health: '仲良く遊んでいます', photo: '' },
+            { id: '10', name: 'ラテ', gender: 'メス / クリーム', status: 'care', appetite: '◎', stool: '良', health: '体調管理中', photo: '' },
+            { id: '11', name: 'クッキー', gender: 'オス / サバ', status: 'normal', appetite: '◎', stool: '良', health: 'ドライフード良好', photo: '' },
+            { id: '12', name: 'シロ', gender: 'オス / 白', status: 'care', appetite: '◎', stool: '軟', health: '便チェック継続', photo: '' },
+            { id: '13', name: 'ビー', gender: 'メス / キジ白', status: 'care', appetite: '△', stool: '未', health: '保護直後', photo: '' },
+            { id: '14', name: 'フク', gender: 'オス / 黒白', status: 'normal', appetite: '◎', stool: '良', health: '元気', photo: '' },
+            { id: '15', name: 'メイ', gender: 'メス / 三毛', status: 'normal', appetite: '◎', stool: '良', health: 'おだやか', photo: '' },
+            { id: '16', name: 'キナコ', gender: 'メス / 茶トラ', status: 'normal', appetite: '◎', stool: '良', health: '人懐っこい', photo: '' },
+            { id: '17', name: 'マル', gender: 'オス / 茶白', status: 'normal', appetite: '◎', stool: '良', health: '食欲旺盛', photo: '' },
+            { id: '18', name: 'ルル', gender: 'メス / 黒', status: 'normal', appetite: '◎', stool: '良', health: '元気', photo: '' },
+            { id: '19', name: 'タマ', gender: 'オス / 三毛', status: 'normal', appetite: '◎', stool: '良', health: 'おっとり', photo: '' },
+            { id: '20', name: 'ソラ', gender: 'メス / 白', status: 'normal', appetite: '◎', stool: '良', health: '問題なし', photo: '' },
+            { id: '21', name: 'ココ', gender: 'メス / キジ', status: 'normal', appetite: '◎', stool: '良', health: '良好', photo: '' },
+            { id: '22', name: 'キジ', gender: 'オス / キジ', status: 'normal', appetite: '◎', stool: '良', health: '元気', photo: '' },
+            { id: '23', name: 'チャ', gender: 'オス / 茶', status: 'normal', appetite: '◎', stool: '良', health: '良好', photo: '' },
+            { id: '24', name: 'クロ', gender: 'オス / 黒', status: 'normal', appetite: '◎', stool: '良', health: '元気', photo: '' },
+            { id: '25', name: 'シロ', gender: 'メス / 白', status: 'normal', appetite: '◎', stool: '良', health: 'おだやか', photo: '' },
+            { id: '26', name: 'ミケ', gender: 'メス / 三毛', status: 'normal', appetite: '◎', stool: '良', health: '良好', photo: '' },
+            { id: '27', name: 'トラ', gender: 'オス / トラ', status: 'normal', appetite: '◎', stool: '良', health: '元気', photo: '' },
+            { id: '28', name: 'ハチ', gender: 'オス / ハチワレ', status: 'normal', appetite: '◎', stool: '良', health: '良好', photo: '' },
+            { id: '29', name: 'スミ', gender: 'メス / 黒', status: 'normal', appetite: '◎', stool: '良', health: 'おだやか', photo: '' },
+            { id: '30', name: 'ポン', gender: 'オス / 茶トラ', status: 'normal', appetite: '◎', stool: '良', health: '元気', photo: '' }
+        ];
+
         let state = {
-            cats: [],
+            cats: defaultCats,
             handovers: [],
             facility: { cleaning: false, water: false, trash: false, temp: false, memo: '猫砂・ペットシーツ十分です。' }
         };
 
         let currentTab = 'handover';
         let currentFilter = 'all';
+        let base64PhotoBuffer = '';
 
-        // 初期ロード時自動取得
+        // 初期ロード時：ローカルストレージから読み込み、裏でスプレッドシートから最新を取得
         window.onload = function() {
-            fetchData();
+            const saved = localStorage.getItem('withcat_local_state');
+            if (saved) {
+                try {
+                    state = JSON.parse(saved);
+                } catch(e) {}
+            }
+            renderAll();
+            fetchData(); // 自動で最新データを取得
         };
 
         function showLoading(show) {
@@ -293,43 +346,52 @@
             setTimeout(() => t.classList.add('hidden'), 2000);
         }
 
-        // --- GASからのデータ取得 ---
-        async function fetchData() {
-            if (!GAS_URL) return;
-            showLoading(true);
-            try {
-                const res = await fetch(GAS_URL + "?action=getData");
-                const json = await res.json();
-                if (json && json.success) {
-                    state = json.data;
-                    renderAll();
-                    showToast("最新データを取得しました");
-                }
-            } catch (e) {
-                console.error(e);
-                showToast("データ取得に失敗しました");
-            } finally {
-                showLoading(false);
-            }
+        function saveLocal() {
+            localStorage.setItem('withcat_local_state', JSON.stringify(state));
         }
 
-        // --- GASへのデータ保存 ---
-        async function saveDataToSheets() {
+        // --- 「更新」ボタンによる手動同期 ---
+        async function syncWithSheets() {
             if (!GAS_URL) return;
             showLoading(true);
             try {
+                // 1. まず現在のローカルデータをサーバーに保存
                 await fetch(GAS_URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ action: 'saveData', data: state })
                 });
-                showToast("スプレッドシートに保存しました");
+
+                // 2. その後、最新データをサーバーから取得
+                const res = await fetch(GAS_URL + "?action=getData");
+                const json = await res.json();
+                if (json && json.success && json.data && json.data.cats && json.data.cats.length > 0) {
+                    state = json.data;
+                    saveLocal();
+                    renderAll();
+                }
+                showToast("✨ スプレッドシートと同期しました！");
             } catch (e) {
                 console.error(e);
-                showToast("保存エラー");
+                showToast("通信エラー（オフラインの可能性）");
             } finally {
                 showLoading(false);
+            }
+        }
+
+        async function fetchData() {
+            if (!GAS_URL) return;
+            try {
+                const res = await fetch(GAS_URL + "?action=getData");
+                const json = await res.json();
+                if (json && json.success && json.data && json.data.cats && json.data.cats.length > 0) {
+                    state = json.data;
+                    saveLocal();
+                    renderAll();
+                }
+            } catch (e) {
+                console.error(e);
             }
         }
 
@@ -392,7 +454,7 @@
             if (!state.facility) state.facility = {};
             state.facility[key] = !state.facility[key];
             renderAll();
-            saveDataToSheets();
+            saveLocal();
         }
 
         function openFacilityModal() {
@@ -409,7 +471,7 @@
             state.facility.memo = document.getElementById('facility-input-text').value;
             renderAll();
             closeFacilityModal();
-            saveDataToSheets();
+            saveLocal();
         }
 
         function renderPriorityPreview() {
@@ -422,7 +484,7 @@
             container.innerHTML = careCats.map(cat => `
                 <div class="bg-white p-2 rounded-xl border border-amber-200 shrink-0 w-36 shadow-xs flex items-center gap-2">
                     <div class="w-10 h-10 rounded-full bg-slate-100 overflow-hidden shrink-0 flex items-center justify-center border border-amber-100">
-                        <i class="fa-solid fa-cat text-amber-500"></i>
+                        ${cat.photo ? `<img src="${cat.photo}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-cat text-amber-500"></i>`}
                     </div>
                     <div class="overflow-hidden">
                         <div class="font-bold text-xs truncate text-slate-800">${cat.name}</div>
@@ -463,9 +525,10 @@
 
             state.handovers.unshift(newPost);
             renderAll();
+            saveLocal();
             document.getElementById('handover-text').value = '';
             document.getElementById('handover-cat-link').value = '';
-            saveDataToSheets();
+            showToast("申し送りを追加しました（上部の「更新」で保存）");
         }
 
         function renderHandovers() {
@@ -501,7 +564,7 @@
             if (target) {
                 target.reads = (target.reads || 0) + 1;
                 renderAll();
-                saveDataToSheets();
+                saveLocal();
             }
         }
 
@@ -542,7 +605,7 @@
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-2.5">
                             <div class="w-12 h-12 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center border border-slate-200 shrink-0">
-                                <i class="fa-solid fa-cat text-slate-400 text-lg"></i>
+                                ${cat.photo ? `<img src="${cat.photo}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-cat text-slate-400 text-lg"></i>`}
                             </div>
                             <div>
                                 <div class="flex items-center gap-1.5">
@@ -592,7 +655,7 @@
             if (cat) {
                 cat[field] = cat[field] === val ? '' : val;
                 renderAll();
-                saveDataToSheets();
+                saveLocal();
             }
         }
 
@@ -602,7 +665,7 @@
                 <div class="bg-white p-3 rounded-xl shadow-xs border border-slate-200 flex items-center justify-between">
                     <div class="flex items-center gap-3">
                         <div class="w-10 h-10 rounded-full bg-slate-100 overflow-hidden flex items-center justify-center border border-slate-200 shrink-0">
-                            <i class="fa-solid fa-cat text-slate-400"></i>
+                            ${cat.photo ? `<img src="${cat.photo}" class="w-full h-full object-cover">` : `<i class="fa-solid fa-cat text-slate-400"></i>`}
                         </div>
                         <div>
                             <div class="flex items-center gap-1.5">
@@ -624,6 +687,9 @@
 
         function openCatModal(id = null) {
             document.getElementById('cat-modal').classList.remove('hidden');
+            document.getElementById('input-photo').value = '';
+            base64PhotoBuffer = '';
+
             if (id) {
                 document.getElementById('modal-title').innerText = '猫カルテ・情報編集';
                 const cat = state.cats.find(c => c.id === id);
@@ -632,15 +698,36 @@
                 document.getElementById('input-status').value = cat.status || 'normal';
                 document.getElementById('input-gender').value = cat.gender || '';
                 document.getElementById('input-health').value = cat.health || '';
+                base64PhotoBuffer = cat.photo || '';
+
+                const box = document.getElementById('photo-preview-box');
+                if (cat.photo) {
+                    box.innerHTML = `<img src="${cat.photo}" class="w-full h-full object-cover">`;
+                } else {
+                    box.innerHTML = `<i class="fa-solid fa-cat text-slate-400 text-xl"></i>`;
+                }
             } else {
                 document.getElementById('modal-title').innerText = '新規猫ちゃんの追加';
                 document.getElementById('cat-id').value = '';
                 document.getElementById('cat-form').reset();
+                document.getElementById('photo-preview-box').innerHTML = `<i class="fa-solid fa-cat text-slate-400 text-xl"></i>`;
             }
         }
 
         function closeCatModal() {
             document.getElementById('cat-modal').classList.add('hidden');
+        }
+
+        function previewPhoto(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    base64PhotoBuffer = e.target.result;
+                    document.getElementById('photo-preview-box').innerHTML = `<img src="${base64PhotoBuffer}" class="w-full h-full object-cover">`;
+                }
+                reader.readAsDataURL(file);
+            }
         }
 
         function saveCat(e) {
@@ -658,6 +745,7 @@
                     cat.status = status;
                     cat.gender = gender;
                     cat.health = health;
+                    if (base64PhotoBuffer) cat.photo = base64PhotoBuffer;
                 }
             } else {
                 const newCat = {
@@ -667,21 +755,24 @@
                     gender,
                     health,
                     appetite: '◎',
-                    stool: '良'
+                    stool: '良',
+                    photo: base64PhotoBuffer
                 };
                 state.cats.push(newCat);
             }
 
             renderAll();
             closeCatModal();
-            saveDataToSheets();
+            saveLocal();
+            showToast("保存しました（「更新」ボタンでスプレッドシートに反映）");
         }
 
         function deleteCat(id) {
             if (confirm("本当にこの猫ちゃんの名簿データを削除しますか？")) {
                 state.cats = state.cats.filter(c => c.id !== id);
                 renderAll();
-                saveDataToSheets();
+                saveLocal();
+                showToast("削除しました");
             }
         }
 
