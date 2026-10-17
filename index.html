@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WithCat引継ぎアプリ (スプレッドシート連携版)</title>
+    <title>WithCat引継ぎアプリ (完全同期・画像保存版)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></link>
     <style>
@@ -24,12 +24,12 @@
                     <h1 class="font-bold text-sm sm:text-base leading-tight">WithCat引継ぎアプリ</h1>
                     <p class="text-[10px] text-teal-100 flex items-center gap-1">
                         <span id="sync-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
-                        <span id="current-date-display">スプレッドシート連携版</span>
+                        <span id="current-date-display">スプレッドシート完全同期</span>
                     </p>
                 </div>
             </div>
             <div class="flex gap-1.5">
-                <button onclick="syncWithSheets()" class="bg-amber-600 hover:bg-amber-500 text-[11px] px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1 shadow-xs" title="スプレッドシートとデータを同期">
+                <button onclick="syncWithSheets()" class="bg-amber-600 hover:bg-amber-500 text-[11px] px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1 shadow-xs" title="クラウドと同期">
                     <i class="fa-solid fa-rotate"></i>更新
                 </button>
                 <button onclick="copyLineReport()" class="bg-emerald-600 hover:bg-emerald-500 text-[11px] px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1 shadow-xs">
@@ -69,7 +69,7 @@
     <!-- ローディングオーバーレイ -->
     <div id="loading-overlay" class="fixed inset-0 bg-black/30 backdrop-blur-xs z-50 flex items-center justify-center hidden">
         <div class="bg-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 text-xs font-bold text-slate-700">
-            <i class="fa-solid fa-spinner animate-spin text-teal-600 text-base"></i> スプレッドシートと通信中...
+            <i class="fa-solid fa-spinner animate-spin text-teal-600 text-base"></i> クラウドと通信・写真保存中...
         </div>
     </div>
 
@@ -88,12 +88,8 @@
                         <i class="fa-solid fa-pen text-[10px]"></i>メモ編集
                     </button>
                 </div>
-                <div class="grid grid-cols-4 gap-1.5 text-[11px] font-bold" id="facility-toggles">
-                    <!-- 動的挿入 -->
-                </div>
-                <p class="text-[11px] text-slate-600 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100" id="facility-summary-text">
-                    <!-- 施設メモ -->
-                </p>
+                <div class="grid grid-cols-4 gap-1.5 text-[11px] font-bold" id="facility-toggles"></div>
+                <p class="text-[11px] text-slate-600 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100" id="facility-summary-text"></p>
             </div>
 
             <!-- 要注意・ケア対象猫のピックアップ -->
@@ -106,9 +102,7 @@
                         全て見る <i class="fa-solid fa-chevron-right text-[10px]"></i>
                     </button>
                 </div>
-                <div id="priority-cats-preview" class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
-                    <!-- 動的挿入 -->
-                </div>
+                <div id="priority-cats-preview" class="flex gap-2 overflow-x-auto no-scrollbar pb-1"></div>
             </div>
 
             <!-- シフト申し送りフォーム -->
@@ -150,9 +144,7 @@
             </div>
 
             <!-- タイムライン一覧 -->
-            <div id="handover-list" class="space-y-2">
-                <!-- 動的挿入 -->
-            </div>
+            <div id="handover-list" class="space-y-2"></div>
         </section>
 
         <!-- ================= 2. お世話カルテタブ ================= -->
@@ -164,26 +156,18 @@
                         class="w-full text-xs pl-8 pr-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500">
                 </div>
                 <div class="flex gap-1.5 overflow-x-auto no-scrollbar text-[11px] font-bold">
-                    <button onclick="setFilter('all')" id="filter-all" class="px-3 py-1 rounded-full bg-teal-600 text-white shrink-0 transition">
-                        全頭
-                    </button>
-                    <button onclick="setFilter('care')" id="filter-care" class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-amber-50 shrink-0 transition">
-                        🟡 様子見・ケア
-                    </button>
-                    <button onclick="setFilter('unfed')" id="filter-unfed" class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-teal-50 shrink-0 transition">
-                        🍽️ ごはん未確認
-                    </button>
+                    <button onclick="setFilter('all')" id="filter-all" class="px-3 py-1 rounded-full bg-teal-600 text-white shrink-0 transition">全頭</button>
+                    <button onclick="setFilter('care')" id="filter-care" class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-amber-50 shrink-0 transition">🟡 様子見・ケア</button>
+                    <button onclick="setFilter('unfed')" id="filter-unfed" class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-teal-50 shrink-0 transition">🍽️ ごはん未確認</button>
                 </div>
             </div>
 
             <div class="text-[11px] text-slate-500 px-1 flex justify-between items-center">
-                <span>※上部の「更新」ボタンでスプレッドシートと同期します</span>
+                <span>※上部の「更新」ボタンでGoogleドライブとスプレッドシートに保存・同期します</span>
                 <span id="filtered-count-label">0頭表示中</span>
             </div>
 
-            <div id="cats-list" class="space-y-2.5">
-                <!-- 動的挿入 -->
-            </div>
+            <div id="cats-list" class="space-y-2.5"></div>
         </section>
 
         <!-- ================= 3. 在籍名簿管理タブ ================= -->
@@ -198,9 +182,7 @@
                 </button>
             </div>
 
-            <div id="roster-list" class="space-y-2">
-                <!-- 動的挿入 -->
-            </div>
+            <div id="roster-list" class="space-y-2"></div>
         </section>
 
     </main>
@@ -273,13 +255,12 @@
         const today = new Date();
         const days = ['日', '月', '火', '水', '木', '金', '土'];
         const dateStringFormatted = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日(${days[today.getDay()]})`;
-        document.getElementById('current-date-display').innerText = `${dateStringFormatted} スプレッドシート連携`;
+        document.getElementById('current-date-display').innerText = `${dateStringFormatted} スプレッドシート完全同期`;
         document.getElementById('form-current-datetime').innerText = `${dateStringFormatted}`;
 
-        // お客様専用のGASウェブアプリURL（ハードコード済）
+        // お客様専用GASウェブアプリURL
         const GAS_URL = 'https://script.google.com/macros/s/AKfycbzC1OA7WKhXKf2aoqWvnyHeJkHlK2MsQGbaPPu3KlePs06m66QZTURKv7LiN8WSmRwX/exec';
 
-        // 初期デフォルトデータ（30頭）
         const defaultCats = [
             { id: '1', name: 'みけ美', gender: 'メス / 三毛', status: 'care', appetite: '◎', stool: '良', health: '右目少し涙目', photo: '' },
             { id: '2', name: 'チャチャ', gender: 'オス / 茶トラ', status: 'care', appetite: '△', stool: '良', health: '少し警戒心あり', photo: '' },
@@ -323,16 +304,13 @@
         let currentFilter = 'all';
         let base64PhotoBuffer = '';
 
-        // 初期ロード時：ローカルストレージから読み込み、裏でスプレッドシートから最新を取得
         window.onload = function() {
-            const saved = localStorage.getItem('withcat_local_state');
+            const saved = localStorage.getItem('withcat_local_complete_state');
             if (saved) {
-                try {
-                    state = JSON.parse(saved);
-                } catch(e) {}
+                try { state = JSON.parse(saved); } catch(e) {}
             }
             renderAll();
-            fetchData(); // 自動で最新データを取得
+            fetchData();
         };
 
         function showLoading(show) {
@@ -343,19 +321,19 @@
             const t = document.getElementById('toast');
             t.innerText = msg;
             t.classList.remove('hidden');
-            setTimeout(() => t.classList.add('hidden'), 2000);
+            setTimeout(() => t.classList.add('hidden'), 2500);
         }
 
         function saveLocal() {
-            localStorage.setItem('withcat_local_state', JSON.stringify(state));
+            localStorage.setItem('withcat_local_complete_state', JSON.stringify(state));
         }
 
-        // --- 「更新」ボタンによるスマート同期（写真や新規データを保護するマージ処理） ---
+        // --- 手動同期（「更新」ボタン）: クラウド保存 ＆ Googleドライブへの写真保存 ＆ データの安全なマージ ---
         async function syncWithSheets() {
             if (!GAS_URL) return;
             showLoading(true);
             try {
-                // 1. まず現在のローカルデータをサーバーに保存
+                // 1. クラウドへ現在のデータを送信（GAS側で写真がGoogleドライブに保存されURLに置換されます）
                 await fetch(GAS_URL, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -363,17 +341,16 @@
                     body: JSON.stringify({ action: 'saveData', data: state })
                 });
 
-                // 2. その後、サーバーから最新データを取得
+                // 2. クラウドから最新データを取得
                 const res = await fetch(GAS_URL + "?action=getData");
                 const json = await res.json();
-                if (json && json.success && json.data && json.data.cats && json.data.cats.length > 0) {
+                if (json && json.success && json.data && json.data.cats) {
                     const remoteData = json.data;
                     
-                    // 賢いマージ：ローカルにある写真データや新規データを上書きで消されないように保護
+                    // 写真や最新編集内容を保護しつつスマートにマージ
                     remoteData.cats = remoteData.cats.map(remoteCat => {
                         const localCat = state.cats.find(c => c.id === remoteCat.id);
                         if (localCat) {
-                            // ローカルに写真があってリモートに写真がない場合はローカルの写真を維持
                             if (!remoteCat.photo && localCat.photo) {
                                 remoteCat.photo = localCat.photo;
                             }
@@ -381,18 +358,24 @@
                         return remoteCat;
                     });
 
-                    // リモートにないローカル追加猫も保護
                     state.cats.forEach(localCat => {
                         if (!remoteData.cats.some(c => c.id === localCat.id)) {
                             remoteData.cats.push(localCat);
                         }
                     });
 
-                    state = remoteData;
+                    // 申し送りなども結合
+                    if (remoteData.handovers) {
+                        state.handovers = remoteData.handovers;
+                    }
+                    if (remoteData.facility) {
+                        state.facility = remoteData.facility;
+                    }
+
                     saveLocal();
                     renderAll();
                 }
-                showToast("✨ スプレッドシートと同期しました！");
+                showToast("✨ クラウド・Googleドライブと同期完了しました！");
             } catch (e) {
                 console.error(e);
                 showToast("通信エラー（オフラインの可能性）");
@@ -557,7 +540,7 @@
             saveLocal();
             document.getElementById('handover-text').value = '';
             document.getElementById('handover-cat-link').value = '';
-            showToast("申し送りを追加しました（上部の「更新」で保存）");
+            showToast("申し送りを追加しました（「更新」でクラウドに保存されます）");
         }
 
         function renderHandovers() {
@@ -752,8 +735,33 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
-                    base64PhotoBuffer = e.target.result;
-                    document.getElementById('photo-preview-box').innerHTML = `<img src="${base64PhotoBuffer}" class="w-full h-full object-cover">`;
+                    const img = new Image();
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        const MAX_WIDTH = 400;
+                        const MAX_HEIGHT = 400;
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > height) {
+                            if (width > MAX_WIDTH) {
+                                height *= MAX_WIDTH / width;
+                                width = MAX_WIDTH;
+                            }
+                        } else {
+                            if (height > MAX_HEIGHT) {
+                                width *= MAX_HEIGHT / height;
+                                height = MAX_HEIGHT;
+                            }
+                        }
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        base64PhotoBuffer = canvas.toDataURL('image/jpeg', 0.8);
+                        document.getElementById('photo-preview-box').innerHTML = `<img src="${base64PhotoBuffer}" class="w-full h-full object-cover">`;
+                    }
+                    img.src = e.target.result;
                 }
                 reader.readAsDataURL(file);
             }
@@ -793,7 +801,7 @@
             renderAll();
             closeCatModal();
             saveLocal();
-            showToast("保存しました（「更新」ボタンでスプレッドシートに反映）");
+            showToast("保存しました（「更新」ボタンでGoogleドライブ＆スプレッドシートに反映されます）");
         }
 
         function deleteCat(id) {
