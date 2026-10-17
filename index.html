@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WithCat引継ぎアプリ</title>
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></link>
     <!-- Firebase App & Realtime Database CDN -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
@@ -29,7 +27,7 @@
                     <h1 class="font-bold text-sm sm:text-base leading-tight">WithCat引継ぎアプリ</h1>
                     <p class="text-[10px] text-teal-100 flex items-center gap-1">
                         <span id="sync-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
-                        <span id="current-date-display">リアルタイム同期中</span>
+                        <span id="current-date-display">リアルタイム自動同期中</span>
                     </p>
                 </div>
             </div>
@@ -269,12 +267,12 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const rootRef = db.ref('withcat_shared_v3');
+        const rootRef = db.ref('withcat_shared_v5_master');
 
         const today = new Date();
         const days = ['日', '月', '火', '水', '木', '金', '土'];
         const dateStringFormatted = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日(${days[today.getDay()]})`;
-        document.getElementById('current-date-display').innerText = `${dateStringFormatted} リアルタイム同期中`;
+        document.getElementById('current-date-display').innerText = `${dateStringFormatted} リアルタイム自動同期中`;
         document.getElementById('form-current-datetime').innerText = `${dateStringFormatted}`;
 
         // 初期30頭データ
@@ -327,13 +325,24 @@
         let currentFilter = 'all';
         let base64PhotoBuffer = '';
 
+        // Firebaseリアルタイムリスナー（データ変更時に即座に自動反映）
         rootRef.on('value', (snapshot) => {
             const val = snapshot.val();
-            if (val) {
-                if (val.cats) state.cats = val.cats;
+            if (val && val.cats && val.cats.length > 0) {
+                state.cats = val.cats;
                 if (val.handovers) state.handovers = val.handovers;
                 if (val.facility) state.facility = val.facility;
             } else {
+                // クラウドが空の場合、ローカルストレージやデフォルト値があれば保存
+                const localData = localStorage.getItem('withcat_local_backup');
+                if (localData) {
+                    try {
+                        const parsed = JSON.parse(localData);
+                        if (parsed.cats && parsed.cats.length > 0) {
+                            state = parsed;
+                        }
+                    } catch(e) {}
+                }
                 rootRef.set(state);
             }
             renderAll();
@@ -342,7 +351,12 @@
         });
 
         function saveToCloud() {
-            rootRef.set(state);
+            // ローカルにもバックアップ保存
+            localStorage.setItem('withcat_local_backup', JSON.stringify(state));
+            rootRef.set(state).catch(err => {
+                console.error("Save to cloud failed:", err);
+                showToast("クラウド保存エラー。再試行してください");
+            });
         }
 
         function switchTab(tab) {
