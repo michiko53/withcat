@@ -310,6 +310,7 @@
                 try { state = JSON.parse(saved); } catch(e) {}
             }
             renderAll();
+            // 起動時に自動でクラウドから最新データを取得
             fetchData();
         };
 
@@ -328,12 +329,12 @@
             localStorage.setItem('withcat_local_complete_state', JSON.stringify(state));
         }
 
-        // --- 手動同期（「更新」ボタン）: クラウド保存 ＆ Googleドライブへの写真保存 ＆ データの安全なマージ ---
+        // --- 手動同期（「更新」ボタン）: クラウドへ保存 ＆ クラウドから最新を取得してスマートマージ ---
         async function syncWithSheets() {
             if (!GAS_URL) return;
             showLoading(true);
             try {
-                // 1. クラウドへ現在のデータを送信（GAS側で写真がGoogleドライブに保存されURLに置換されます）
+                // 1. まず現在のローカル状態（新しく追加した写真やチェック）をクラウドに送信・保存
                 await fetch(GAS_URL, {
                     method: 'POST',
                     mode: 'no-cors',
@@ -341,31 +342,34 @@
                     body: JSON.stringify({ action: 'saveData', data: state })
                 });
 
-                // 2. クラウドから最新データを取得
+                // 少し待ってからクラウドの最新データを取得
+                await new Promise(resolve => setTimeout(resolve, 1200));
+
+                // 2. クラウドから最新データを取得して統合
                 const res = await fetch(GAS_URL + "?action=getData");
                 const json = await res.json();
                 if (json && json.success && json.data && json.data.cats) {
                     const remoteData = json.data;
                     
-                    // 写真や最新編集内容を保護しつつスマートにマージ
+                    // クラウド側のデータをベースにしつつ、ローカルで一時保持している未反映の写真や入力を保護
                     remoteData.cats = remoteData.cats.map(remoteCat => {
                         const localCat = state.cats.find(c => c.id === remoteCat.id);
                         if (localCat) {
                             if (!remoteCat.photo && localCat.photo) {
-                                remoteCat.photo = localCat.photo;
+                                remoteCat.photo = localCat.photo; // ローカルの写真を保護
                             }
                         }
                         return remoteCat;
                     });
 
+                    // 新規追加されたローカルの猫がいれば追加
                     state.cats.forEach(localCat => {
                         if (!remoteData.cats.some(c => c.id === localCat.id)) {
                             remoteData.cats.push(localCat);
                         }
                     });
 
-                    // 申し送りなども結合
-                    if (remoteData.handovers) {
+                    if (remoteData.handovers && remoteData.handovers.length > 0) {
                         state.handovers = remoteData.handovers;
                     }
                     if (remoteData.facility) {
@@ -375,7 +379,7 @@
                     saveLocal();
                     renderAll();
                 }
-                showToast("✨ クラウド・Googleドライブと同期完了しました！");
+                showToast("✨ クラウド・Googleドライブと完全同期しました！");
             } catch (e) {
                 console.error(e);
                 showToast("通信エラー（オフラインの可能性）");
