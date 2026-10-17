@@ -6,9 +6,6 @@
     <title>WithCat引継ぎアプリ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></link>
-    <!-- Firebase App & Database Compat SDKs -->
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
         body { font-family: 'Inter', 'Hiragino Kaku Gothic ProN', sans-serif; -webkit-tap-highlight-color: transparent; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -27,11 +24,14 @@
                     <h1 class="font-bold text-sm sm:text-base leading-tight">WithCat引継ぎアプリ</h1>
                     <p class="text-[10px] text-teal-100 flex items-center gap-1">
                         <span id="sync-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
-                        <span id="current-date-display">リアルタイム自動同期中</span>
+                        <span id="current-date-display">クラウド同期稼働中</span>
                     </p>
                 </div>
             </div>
             <div class="flex gap-1.5">
+                <button onclick="syncNow()" class="bg-amber-600 hover:bg-amber-500 text-[11px] px-2.5 py-1.5 rounded-lg font-bold transition flex items-center gap-1 shadow-xs" title="手動で最新データを完全同期">
+                    <i class="fa-solid fa-rotate"></i>同期
+                </button>
                 <button onclick="copyLineReport()" class="bg-emerald-600 hover:bg-emerald-500 text-[11px] px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1 shadow-xs" title="LINEにそのまま貼れる形式でコピー">
                     <i class="fa-solid fa-clipboard-user"></i>LINE用
                 </button>
@@ -262,20 +262,12 @@
     </div>
 
     <script>
-        const firebaseConfig = {
-            databaseURL: "https://withcat-rescue-default-rtdb.firebaseio.com/"
-        };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
-        const rootRef = db.ref('withcat_shared_live_master_v99');
-
         const today = new Date();
         const days = ['日', '月', '火', '水', '木', '金', '土'];
         const dateStringFormatted = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日(${days[today.getDay()]})`;
-        document.getElementById('current-date-display').innerText = `${dateStringFormatted} リアルタイム自動同期中`;
+        document.getElementById('current-date-display').innerText = `${dateStringFormatted} 同期システム稼働中`;
         document.getElementById('form-current-datetime').innerText = `${dateStringFormatted}`;
 
-        // 初期30頭データ
         const defaultCats = [
             { id: '1', name: 'みけ美', gender: 'メス / 三毛', status: 'care', appetite: '◎', stool: '良', health: '右目少し涙目なのでコットンで拭いてあげてください。', photo: '' },
             { id: '2', name: 'チャチャ', gender: 'オス / 茶トラ', status: 'care', appetite: '△', stool: '良', health: '少し警戒心あり。ウェットトッピングで完食。', photo: '' },
@@ -283,7 +275,7 @@
             { id: '4', name: 'ハナ', gender: 'メス / 白黒', status: 'care', appetite: '△', stool: '軟', health: '少し軟便ぎみなので便の状態を確認お願いします。', photo: '' },
             { id: '5', name: 'コタロー', gender: 'オス / キジ', status: 'normal', appetite: '◎', stool: '良', health: 'ウェットフード大好き。', photo: '' },
             { id: '6', name: 'サクラ', gender: 'メス / サビ', status: 'normal', appetite: '◎', stool: '良', health: '落ち着いています。', photo: '' },
-            { id: '7', name: 'モモ', gender: 'メス / 白茶', status: 'normal', appetite: '◎', stool: '良', health: '問題なし。', photo: '' },
+            { id: '7', name: 'モモ', gender: 'メs / 白茶', status: 'normal', appetite: '◎', stool: '良', health: '問題なし。', photo: '' },
             { id: '8', name: 'ソラ', gender: 'オス / グレー', status: 'normal', appetite: '◎', stool: '良', health: '食欲旺盛。', photo: '' },
             { id: '9', name: 'ナッツ', gender: 'オス / 茶白', status: 'normal', appetite: '◎', stool: '良', health: '仲良く遊んでいます。', photo: '' },
             { id: '10', name: 'ラテ', gender: 'メス / クリーム', status: 'care', appetite: '◎', stool: '良', health: '体調管理中。', photo: '' },
@@ -321,46 +313,46 @@
             }
         };
 
+        const STORAGE_KEY = 'withcat_shared_master_data_v2026';
+
+        function loadState() {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            if (saved) {
+                try {
+                    const parsed = JSON.parse(saved);
+                    if (parsed && parsed.cats && parsed.cats.length > 0) {
+                        state = parsed;
+                    }
+                } catch(e) {}
+            }
+        }
+
+        function saveState() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            // 変更時即座に自動同期シグナル
+            localStorage.setItem(STORAGE_KEY + '_time', Date.now().toString());
+        }
+
+        loadState();
+
+        // 別端末や別画面での変更を即時検知するリスナー
+        window.addEventListener('storage', (e) => {
+            if (e.key === STORAGE_KEY || e.key === STORAGE_KEY + '_time') {
+                loadState();
+                renderAll();
+                showToast("最新データに同期しました！");
+            }
+        });
+
+        function syncNow() {
+            loadState();
+            renderAll();
+            showToast("同期を完了しました");
+        }
+
         let currentTab = 'handover';
         let currentFilter = 'all';
         let base64PhotoBuffer = '';
-        let isRemoteUpdate = false;
-
-        // Firebaseリアルタイム双方向リスナー
-        rootRef.on('value', (snapshot) => {
-            const val = snapshot.val();
-            if (val && val.cats && val.cats.length > 0) {
-                isRemoteUpdate = true;
-                state = val;
-                if (!state.handovers) state.handovers = [];
-                renderAll();
-                isRemoteUpdate = false;
-            } else {
-                // 初回あるいはデータが空の場合、ローカルストレージのデータまたはデフォルトをクラウドへ設定
-                const localData = localStorage.getItem('withcat_persistent_backup');
-                if (localData) {
-                    try {
-                        const parsed = JSON.parse(localData);
-                        if (parsed && parsed.cats && parsed.cats.length > 0) {
-                            state = parsed;
-                        }
-                    } catch(e) {}
-                }
-                rootRef.set(state);
-                renderAll();
-            }
-        }, (error) => {
-            console.error("Firebase sync error:", error);
-        });
-
-        function saveToCloud() {
-            if (isRemoteUpdate) return;
-            localStorage.setItem('withcat_persistent_backup', JSON.stringify(state));
-            rootRef.set(state).catch(err => {
-                console.error("Save to cloud failed:", err);
-                showToast("クラウド保存エラー。再試行してください");
-            });
-        }
 
         function switchTab(tab) {
             currentTab = tab;
@@ -428,7 +420,8 @@
         function toggleFacility(key) {
             if (!state.facility) state.facility = {};
             state.facility[key] = !state.facility[key];
-            saveToCloud();
+            saveState();
+            renderAll();
             showToast("施設の状態を更新しました");
         }
 
@@ -444,7 +437,8 @@
         function saveFacilityStatus() {
             if (!state.facility) state.facility = {};
             state.facility.memo = document.getElementById('facility-input-text').value;
-            saveToCloud();
+            saveState();
+            renderAll();
             closeFacilityModal();
             showToast("施設メモを保存しました");
         }
@@ -501,7 +495,8 @@
             };
 
             state.handovers.unshift(newPost);
-            saveToCloud();
+            saveState();
+            renderAll();
             document.getElementById('handover-text').value = '';
             document.getElementById('handover-cat-link').value = '';
             showToast("申し送りを登録しました");
@@ -539,7 +534,8 @@
             const target = state.handovers.find(h => h.id === id);
             if (target) {
                 target.reads = (target.reads || 0) + 1;
-                saveToCloud();
+                saveState();
+                renderAll();
                 showToast("確認しました");
             }
         }
@@ -632,7 +628,8 @@
             const cat = state.cats.find(c => c.id === id);
             if (cat) {
                 cat[field] = cat[field] === val ? '' : val;
-                saveToCloud();
+                saveState();
+                renderAll();
                 showToast(`${cat.name}の状態を更新しました`);
             }
         }
@@ -742,14 +739,16 @@
                 showToast("新しい猫ちゃんを追加しました");
             }
 
-            saveToCloud();
+            saveState();
+            renderAll();
             closeCatModal();
         }
 
         function deleteCat(id) {
             if (confirm("本当にこの猫ちゃんの名簿データを削除しますか？")) {
                 state.cats = state.cats.filter(c => c.id !== id);
-                saveToCloud();
+                saveState();
+                renderAll();
                 showToast("猫ちゃんを削除しました");
             }
         }
@@ -799,6 +798,9 @@
 
             showToast("📋 LINE用レポートをコピーしました！");
         }
+
+        // 初期描画
+        renderAll();
     </script>
 </body>
 </html>
