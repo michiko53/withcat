@@ -6,7 +6,6 @@
     <title>WithCat引継ぎアプリ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></link>
-    <!-- Firebase App & Realtime Database CDN -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
     <style>
@@ -267,7 +266,7 @@
         };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        const rootRef = db.ref('withcat_shared_v5_master');
+        const rootRef = db.ref('withcat_shared_v10_unified_room');
 
         const today = new Date();
         const days = ['日', '月', '火', '水', '木', '金', '土'];
@@ -325,7 +324,7 @@
         let currentFilter = 'all';
         let base64PhotoBuffer = '';
 
-        // Firebaseリアルタイムリスナー（データ変更時に即座に自動反映）
+        // Firebaseリアルタイムリスナー & ローカル保護救出機能
         rootRef.on('value', (snapshot) => {
             const val = snapshot.val();
             if (val && val.cats && val.cats.length > 0) {
@@ -333,7 +332,7 @@
                 if (val.handovers) state.handovers = val.handovers;
                 if (val.facility) state.facility = val.facility;
             } else {
-                // クラウドが空の場合、ローカルストレージやデフォルト値があれば保存
+                // クラウドが空または未初期化の場合、ローカルストレージのデータを救出してクラウドに保存
                 const localData = localStorage.getItem('withcat_local_backup');
                 if (localData) {
                     try {
@@ -351,7 +350,7 @@
         });
 
         function saveToCloud() {
-            // ローカルにもバックアップ保存
+            // ローカルにも常時バックアップ保存
             localStorage.setItem('withcat_local_backup', JSON.stringify(state));
             rootRef.set(state).catch(err => {
                 console.error("Save to cloud failed:", err);
