@@ -3,9 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WithCat引継ぎアプリ (完全同期・画像保存版)</title>
+    <title>WithCat引継ぎアプリ</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"></link>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
         body { font-family: 'Inter', 'Hiragino Kaku Gothic ProN', sans-serif; -webkit-tap-highlight-color: transparent; }
         .no-scrollbar::-webkit-scrollbar { display: none; }
@@ -23,16 +25,13 @@
                 <div>
                     <h1 class="font-bold text-sm sm:text-base leading-tight">WithCat引継ぎアプリ</h1>
                     <p class="text-[10px] text-teal-100 flex items-center gap-1">
-                        <span id="sync-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
-                        <span id="current-date-display">スプレッドシート完全同期</span>
+                        <span id="sync-status-dot" class="w-2 h-2 rounded-full bg-emerald-400 inline-block animate-pulse"></span>
+                        <span id="current-date-display">リアルタイム自動同期中</span>
                     </p>
                 </div>
             </div>
             <div class="flex gap-1.5">
-                <button onclick="syncWithSheets()" class="bg-amber-600 hover:bg-amber-500 text-[11px] px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1 shadow-xs" title="クラウドと同期">
-                    <i class="fa-solid fa-rotate"></i>更新
-                </button>
-                <button onclick="copyLineReport()" class="bg-emerald-600 hover:bg-emerald-500 text-[11px] px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1 shadow-xs">
+                <button onclick="copyLineReport()" class="bg-emerald-600 hover:bg-emerald-500 text-[11px] px-3 py-1.5 rounded-lg font-bold transition flex items-center gap-1 shadow-xs" title="LINEにそのまま貼れる形式でコピー">
                     <i class="fa-solid fa-clipboard-user"></i>LINE用
                 </button>
             </div>
@@ -66,13 +65,6 @@
         同期しました
     </div>
 
-    <!-- ローディングオーバーレイ -->
-    <div id="loading-overlay" class="fixed inset-0 bg-black/30 backdrop-blur-xs z-50 flex items-center justify-center hidden">
-        <div class="bg-white px-5 py-3 rounded-xl shadow-lg flex items-center gap-3 text-xs font-bold text-slate-700">
-            <i class="fa-solid fa-spinner animate-spin text-teal-600 text-base"></i> クラウドと通信・写真保存中...
-        </div>
-    </div>
-
     <main class="max-w-md mx-auto p-3 space-y-3">
         
         <!-- ================= 1. トップ・引継ぎタブ ================= -->
@@ -88,8 +80,12 @@
                         <i class="fa-solid fa-pen text-[10px]"></i>メモ編集
                     </button>
                 </div>
-                <div class="grid grid-cols-4 gap-1.5 text-[11px] font-bold" id="facility-toggles"></div>
-                <p class="text-[11px] text-slate-600 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100" id="facility-summary-text"></p>
+                <div class="grid grid-cols-4 gap-1.5 text-[11px] font-bold" id="facility-toggles">
+                    <!-- 動的挿入 -->
+                </div>
+                <p class="text-[11px] text-slate-600 bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-100" id="facility-summary-text">
+                    <!-- 施設メモ -->
+                </p>
             </div>
 
             <!-- 要注意・ケア対象猫のピックアップ -->
@@ -102,7 +98,9 @@
                         全て見る <i class="fa-solid fa-chevron-right text-[10px]"></i>
                     </button>
                 </div>
-                <div id="priority-cats-preview" class="flex gap-2 overflow-x-auto no-scrollbar pb-1"></div>
+                <div id="priority-cats-preview" class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+                    <!-- 動的挿入 -->
+                </div>
             </div>
 
             <!-- シフト申し送りフォーム -->
@@ -138,13 +136,15 @@
                             class="w-2/3 text-xs px-3 py-1.5 rounded-lg border border-slate-200 focus:outline-none focus:ring-2 focus:ring-teal-500">
                     </div>
                     <button type="submit" class="w-full bg-teal-600 hover:bg-teal-700 text-white font-bold py-2 rounded-lg text-xs transition shadow-xs flex items-center justify-center gap-1">
-                        <i class="fa-solid fa-paper-plane"></i> 申し送りを登録する（「更新」で保存）
+                        <i class="fa-solid fa-paper-plane"></i> 申し送りを登録する
                     </button>
                 </form>
             </div>
 
             <!-- タイムライン一覧 -->
-            <div id="handover-list" class="space-y-2"></div>
+            <div id="handover-list" class="space-y-2">
+                <!-- 動的挿入 -->
+            </div>
         </section>
 
         <!-- ================= 2. お世話カルテタブ ================= -->
@@ -156,18 +156,26 @@
                         class="w-full text-xs pl-8 pr-3 py-2 rounded-lg border border-slate-200 bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-teal-500">
                 </div>
                 <div class="flex gap-1.5 overflow-x-auto no-scrollbar text-[11px] font-bold">
-                    <button onclick="setFilter('all')" id="filter-all" class="px-3 py-1 rounded-full bg-teal-600 text-white shrink-0 transition">全頭</button>
-                    <button onclick="setFilter('care')" id="filter-care" class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-amber-50 shrink-0 transition">🟡 様子見・ケア</button>
-                    <button onclick="setFilter('unfed')" id="filter-unfed" class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-teal-50 shrink-0 transition">🍽️ ごはん未確認</button>
+                    <button onclick="setFilter('all')" id="filter-all" class="px-3 py-1 rounded-full bg-teal-600 text-white shrink-0 transition">
+                        全頭
+                    </button>
+                    <button onclick="setFilter('care')" id="filter-care" class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-amber-50 shrink-0 transition">
+                        🟡 様子見・ケア
+                    </button>
+                    <button onclick="setFilter('unfed')" id="filter-unfed" class="px-3 py-1 rounded-full bg-slate-100 text-slate-600 hover:bg-teal-50 shrink-0 transition">
+                        🍽️ ごはん未確認
+                    </button>
                 </div>
             </div>
 
             <div class="text-[11px] text-slate-500 px-1 flex justify-between items-center">
-                <span>※上部の「更新」ボタンでGoogleドライブとスプレッドシートに保存・同期します</span>
+                <span>※全員の変更がリアルタイムに反映されます</span>
                 <span id="filtered-count-label">0頭表示中</span>
             </div>
 
-            <div id="cats-list" class="space-y-2.5"></div>
+            <div id="cats-list" class="space-y-2.5">
+                <!-- 動的挿入 -->
+            </div>
         </section>
 
         <!-- ================= 3. 在籍名簿管理タブ ================= -->
@@ -175,14 +183,16 @@
             <div class="bg-white p-3.5 rounded-xl shadow-xs border border-slate-200 flex justify-between items-center">
                 <div>
                     <h2 class="font-bold text-slate-800 text-xs"><i class="fa-solid fa-address-book text-teal-600 mr-1"></i>在籍猫名簿のマスタ管理</h2>
-                    <p class="text-[10px] text-slate-500">猫ちゃんの追加・削除・写真の登録を行います</p>
+                    <p class="text-[10px] text-slate-500">猫ちゃんの追加・削除・写真や情報の登録を行います</p>
                 </div>
                 <button onclick="openCatModal()" class="bg-teal-600 hover:bg-teal-700 text-white text-xs px-3 py-2 rounded-lg font-bold shadow-xs transition flex items-center gap-1 shrink-0">
                     <i class="fa-solid fa-plus"></i> 新規猫を追加
                 </button>
             </div>
 
-            <div id="roster-list" class="space-y-2"></div>
+            <div id="roster-list" class="space-y-2">
+                <!-- 動的挿入 -->
+            </div>
         </section>
 
     </main>
@@ -197,7 +207,6 @@
             <form id="cat-form" onsubmit="saveCat(event)" class="space-y-3">
                 <input type="hidden" id="cat-id">
                 
-                <!-- 写真アップロード -->
                 <div class="flex items-center gap-3 bg-slate-50 p-2.5 rounded-xl border border-slate-200">
                     <div id="photo-preview-box" class="w-14 h-14 rounded-full bg-slate-200 overflow-hidden flex items-center justify-center shrink-0 border border-slate-300">
                         <i class="fa-solid fa-cat text-slate-400 text-xl"></i>
@@ -231,7 +240,7 @@
                 </div>
                 <div class="flex gap-2 pt-2">
                     <button type="button" onclick="closeCatModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2.5 rounded-xl text-xs transition">キャンセル</button>
-                    <button type="submit" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-sm">保存する（「更新」で同期）</button>
+                    <button type="submit" class="flex-1 bg-teal-600 hover:bg-teal-700 text-white font-bold py-2.5 rounded-xl text-xs transition shadow-sm">保存する</button>
                 </div>
             </form>
         </div>
@@ -251,164 +260,128 @@
         </div>
     </div>
 
+    <!-- 猫削除確認モーダル -->
+    <div id="delete-confirm-modal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white w-full max-w-xs rounded-2xl p-4 shadow-xl space-y-3 text-center">
+            <div class="w-10 h-10 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+                <i class="fa-solid fa-trash"></i>
+            </div>
+            <h3 class="font-bold text-slate-800 text-sm">名簿データの削除</h3>
+            <p class="text-xs text-slate-600">本当にこの猫ちゃんの名簿データを削除しますか？</p>
+            <div class="flex gap-2 pt-1">
+                <button onclick="closeDeleteModal()" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-2 rounded-xl text-xs">キャンセル</button>
+                <button onclick="confirmDeleteCat()" class="flex-1 bg-rose-600 hover:bg-rose-700 text-white font-bold py-2 rounded-xl text-xs">削除する</button>
+            </div>
+        </div>
+    </div>
+
     <script>
+        // 1. Firebaseの設定と初期化
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        const firebaseConfig = {
+            apiKey: "AIzaSyCpSQ2qObxtuyfCi4UfS9IyWjh-EwOUncM",
+            authDomain: "withcat-2b102.firebaseapp.com",
+            projectId: "withcat-2b102",
+            storageBucket: "withcat-2b102.firebasestorage.app",
+            messagingSenderId: "229808563951",
+            appId: "1:229808563951:web:2c36b6750c37a7a2f01d1a",
+            measurementId: "G-0PTCCWXQ89"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
+        // 2. 同期用のドキュメント参照を指定
+        const docRef = db.collection('appState').doc('liveSync');
+
         const today = new Date();
         const days = ['日', '月', '火', '水', '木', '金', '土'];
         const dateStringFormatted = `${today.getFullYear()}年${today.getMonth()+1}月${today.getDate()}日(${days[today.getDay()]})`;
-        document.getElementById('current-date-display').innerText = `${dateStringFormatted} スプレッドシート完全同期`;
+        document.getElementById('current-date-display').innerText = `${dateStringFormatted} リアルタイム自動同期中`;
         document.getElementById('form-current-datetime').innerText = `${dateStringFormatted}`;
 
-        // お客様専用GASウェブアプリURL
-        const GAS_URL = 'https://script.google.com/macros/s/AKfycbzC1OA7WKhXKf2aoqWvnyHeJkHlK2MsQGbaPPu3KlePs06m66QZTURKv7LiN8WSmRwX/exec';
-
+        // 初期30頭データ
         const defaultCats = [
-            { id: '1', name: 'みけ美', gender: 'メス / 三毛', status: 'care', appetite: '◎', stool: '良', health: '右目少し涙目', photo: '' },
-            { id: '2', name: 'チャチャ', gender: 'オス / 茶トラ', status: 'care', appetite: '△', stool: '良', health: '少し警戒心あり', photo: '' },
-            { id: '3', name: 'レオ', gender: 'オス / 黒猫', status: 'normal', appetite: '◎', stool: '良', health: '元気いっぱい', photo: '' },
-            { id: '4', name: 'ハナ', gender: 'メス / 白黒', status: 'care', appetite: '△', stool: '軟', health: '少し軟便ぎみ', photo: '' },
-            { id: '5', name: 'コタロー', gender: 'オス / キジ', status: 'normal', appetite: '◎', stool: '良', health: 'ウェット大好き', photo: '' },
-            { id: '6', name: 'サクラ', gender: 'メス / サビ', status: 'normal', appetite: '◎', stool: '良', health: '落ち着いています', photo: '' },
-            { id: '7', name: 'モモ', gender: 'メス / 白茶', status: 'normal', appetite: '◎', stool: '良', health: '問題なし', photo: '' },
-            { id: '8', name: 'ソラ', gender: 'オス / グレー', status: 'normal', appetite: '◎', stool: '良', health: '食欲旺盛', photo: '' },
-            { id: '9', name: 'ナッツ', gender: 'オス / 茶白', status: 'normal', appetite: '◎', stool: '良', health: '仲良く遊んでいます', photo: '' },
-            { id: '10', name: 'ラテ', gender: 'メス / クリーム', status: 'care', appetite: '◎', stool: '良', health: '体調管理中', photo: '' },
-            { id: '11', name: 'クッキー', gender: 'オス / サバ', status: 'normal', appetite: '◎', stool: '良', health: 'ドライフード良好', photo: '' },
-            { id: '12', name: 'シロ', gender: 'オス / 白', status: 'care', appetite: '◎', stool: '軟', health: '便チェック継続', photo: '' },
-            { id: '13', name: 'ビー', gender: 'メス / キジ白', status: 'care', appetite: '△', stool: '未', health: '保護直後', photo: '' },
-            { id: '14', name: 'フク', gender: 'オス / 黒白', status: 'normal', appetite: '◎', stool: '良', health: '元気', photo: '' },
-            { id: '15', name: 'メイ', gender: 'メス / 三毛', status: 'normal', appetite: '◎', stool: '良', health: 'おだやか', photo: '' },
-            { id: '16', name: 'キナコ', gender: 'メス / 茶トラ', status: 'normal', appetite: '◎', stool: '良', health: '人懐っこい', photo: '' },
-            { id: '17', name: 'マル', gender: 'オス / 茶白', status: 'normal', appetite: '◎', stool: '良', health: '食欲旺盛', photo: '' },
-            { id: '18', name: 'ルル', gender: 'メス / 黒', status: 'normal', appetite: '◎', stool: '良', health: '元気', photo: '' },
-            { id: '19', name: 'タマ', gender: 'オス / 三毛', status: 'normal', appetite: '◎', stool: '良', health: 'おっとり', photo: '' },
-            { id: '20', name: 'ソラ', gender: 'メス / 白', status: 'normal', appetite: '◎', stool: '良', health: '問題なし', photo: '' },
-            { id: '21', name: 'ココ', gender: 'メス / キジ', status: 'normal', appetite: '◎', stool: '良', health: '良好', photo: '' },
-            { id: '22', name: 'キジ', gender: 'オス / キジ', status: 'normal', appetite: '◎', stool: '良', health: '元気', photo: '' },
-            { id: '23', name: 'チャ', gender: 'オス / 茶', status: 'normal', appetite: '◎', stool: '良', health: '良好', photo: '' },
-            { id: '24', name: 'クロ', gender: 'オス / 黒', status: 'normal', appetite: '◎', stool: '良', health: '元気', photo: '' },
-            { id: '25', name: 'シロ', gender: 'メス / 白', status: 'normal', appetite: '◎', stool: '良', health: 'おだやか', photo: '' },
-            { id: '26', name: 'ミケ', gender: 'メス / 三毛', status: 'normal', appetite: '◎', stool: '良', health: '良好', photo: '' },
-            { id: '27', name: 'トラ', gender: 'オス / トラ', status: 'normal', appetite: '◎', stool: '良', health: '元気', photo: '' },
-            { id: '28', name: 'ハチ', gender: 'オス / ハチワレ', status: 'normal', appetite: '◎', stool: '良', health: '良好', photo: '' },
-            { id: '29', name: 'スミ', gender: 'メス / 黒', status: 'normal', appetite: '◎', stool: '良', health: 'おだやか', photo: '' },
-            { id: '30', name: 'ポン', gender: 'オス / 茶トラ', status: 'normal', appetite: '◎', stool: '良', health: '元気', photo: '' }
+            { id: '1', name: 'みけ美', gender: 'メス / 三毛', status: 'care', appetite: '◎', stool: '良', health: '右目少し涙目なのでコットンで拭いてあげてください。', photo: '' },
+            { id: '2', name: 'チャチャ', gender: 'オス / 茶トラ', status: 'care', appetite: '△', stool: '良', health: '少し警戒心あり。ウェットトッピングで完食。', photo: '' },
+            { id: '3', name: 'レオ', gender: 'オス / 黒猫', status: 'normal', appetite: '◎', stool: '良', health: '元気いっぱい。', photo: '' },
+            { id: '4', name: 'ハナ', gender: 'メス / 白黒', status: 'care', appetite: '△', stool: '軟', health: '少し軟便ぎみなので便の状態を確認お願いします。', photo: '' },
+            { id: '5', name: 'コタロー', gender: 'オス / キジ', status: 'normal', appetite: '◎', stool: '良', health: 'ウェットフード大好き。', photo: '' },
+            { id: '6', name: 'サクラ', gender: 'メス / サビ', status: 'normal', appetite: '◎', stool: '良', health: '落ち着いています。', photo: '' },
+            { id: '7', name: 'モモ', gender: 'メス / 白茶', status: 'normal', appetite: '◎', stool: '良', health: '問題なし。', photo: '' },
+            { id: '8', name: 'ソラ', gender: 'オス / グレー', status: 'normal', appetite: '◎', stool: '良', health: '食欲旺盛。', photo: '' },
+            { id: '9', name: 'ナッツ', gender: 'オス / 茶白', status: 'normal', appetite: '◎', stool: '良', health: '仲良く遊んでいます。', photo: '' },
+            { id: '10', name: 'ラテ', gender: 'メス / クリーム', status: 'care', appetite: '◎', stool: '良', health: '体調管理中。', photo: '' },
+            { id: '11', name: 'クッキー', gender: 'オス / サバ', status: 'normal', appetite: '◎', stool: '良', health: 'ドライフード良好。', photo: '' },
+            { id: '12', name: 'シロ', gender: 'オス / 白', status: 'care', appetite: '◎', stool: '軟', health: '便チェック継続。', photo: '' },
+            { id: '13', name: 'ビー', gender: 'メス / キジ白', status: 'care', appetite: '△', stool: '未', health: '保護直後。', photo: '' },
+            { id: '14', name: 'フク', gender: 'オス / 黒白', status: 'normal', appetite: '◎', stool: '良', health: '元気。', photo: '' },
+            { id: '15', name: 'メイ', gender: 'メス / 三毛', status: 'normal', appetite: '◎', stool: '良', health: 'おだやか。', photo: '' },
+            { id: '16', name: 'キナコ', gender: 'メス / 茶トラ', status: 'normal', appetite: '◎', stool: '良', health: '人懐っこい。', photo: '' },
+            { id: '17', name: 'マル', gender: 'オス / 茶白', status: 'normal', appetite: '◎', stool: '良', health: '食欲旺盛。', photo: '' },
+            { id: '18', name: 'ルル', gender: 'メス / 黒', status: 'normal', appetite: '◎', stool: '良', health: '元気。', photo: '' },
+            { id: '19', name: 'タマ', gender: 'オス / 三毛', status: 'normal', appetite: '◎', stool: '良', health: 'おっとり。', photo: '' },
+            { id: '20', name: 'ソラ', gender: 'メス / 白', status: 'normal', appetite: '◎', stool: '良', health: '問題なし。', photo: '' },
+            { id: '21', name: 'ココ', gender: 'メス / キジ', status: 'normal', appetite: '◎', stool: '良', health: '良好。', photo: '' },
+            { id: '22', name: 'キジ', gender: 'オス / キジ', status: 'normal', appetite: '◎', stool: '良', health: '元気。', photo: '' },
+            { id: '23', name: 'チャ', gender: 'オス / 茶', status: 'normal', appetite: '◎', stool: '良', health: '良好。', photo: '' },
+            { id: '24', name: 'クロ', gender: 'オス / 黒', status: 'normal', appetite: '◎', stool: '良', health: '元気。', photo: '' },
+            { id: '25', name: 'シロ', gender: 'メス / 白', status: 'normal', appetite: '◎', stool: '良', health: 'おだやか。', photo: '' },
+            { id: '26', name: 'ミケ', gender: 'メス / 三毛', status: 'normal', appetite: '◎', stool: '良', health: '良好。', photo: '' },
+            { id: '27', name: 'トラ', gender: 'オス / トラ', status: 'normal', appetite: '◎', stool: '良', health: '元気。', photo: '' },
+            { id: '28', name: 'ハチ', gender: 'オス / ハチワレ', status: 'normal', appetite: '◎', stool: '良', health: '良好。', photo: '' },
+            { id: '29', name: 'スミ', gender: 'メス / 黒', status: 'normal', appetite: '◎', stool: '良', health: 'おだやか。', photo: '' },
+            { id: '30', name: 'ポン', gender: 'オス / 茶トラ', status: 'normal', appetite: '◎', stool: '良', health: '元気。', photo: '' }
         ];
 
         let state = {
             cats: defaultCats,
             handovers: [],
-            facility: { cleaning: false, water: false, trash: false, temp: false, memo: '猫砂・ペットシーツ十分です。' }
+            facility: {
+                cleaning: false,
+                water: false,
+                trash: false,
+                temp: false,
+                memo: '猫砂・ペットシーツのストック十分です。'
+            }
         };
 
         let currentTab = 'handover';
         let currentFilter = 'all';
         let base64PhotoBuffer = '';
+        let pendingDeleteCatId = null;
 
-        window.onload = function() {
-            const saved = localStorage.getItem('withcat_local_complete_state');
-            if (saved) {
-                try { state = JSON.parse(saved); } catch(e) {}
+        // 3. リアルタイム双方向同期リスナーの書き換え
+        docRef.onSnapshot((doc) => {
+            if (doc.exists) {
+                const val = doc.data();
+                if (val && val.cats && val.cats.length > 0) {
+                    state = val;
+                }
+            } else {
+                // クラウドが空の場合にバックアップまたは初期値をセット
+                const localData = localStorage.getItem('withcat_local_backup');
+                if (localData) {
+                    try {
+                        const parsed = JSON.parse(localData);
+                        if (parsed.cats && parsed.cats.length > 0) {
+                            state = parsed;
+                        }
+                    } catch(e) {}
+                }
+                docRef.set(state);
             }
             renderAll();
-            // 起動時に自動でクラウドから最新データを取得
-            fetchData();
-        };
+        }, (error) => {
+            console.error("Firebase sync error:", error);
+        });
 
-        function showLoading(show) {
-            document.getElementById('loading-overlay').classList.toggle('hidden', !show);
-        }
-
-        function showToast(msg = "同期しました") {
-            const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.classList.remove('hidden');
-            setTimeout(() => t.classList.add('hidden'), 2500);
-        }
-
-        function saveLocal() {
-            localStorage.setItem('withcat_local_complete_state', JSON.stringify(state));
-        }
-
-        // --- 手動同期（「更新」ボタン）: クラウドへ保存 ＆ クラウドから最新を取得してスマートマージ ---
-        async function syncWithSheets() {
-            if (!GAS_URL) return;
-            showLoading(true);
-            try {
-                // 1. まず現在のローカル状態（新しく追加した写真やチェック）をクラウドに送信・保存
-                await fetch(GAS_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'saveData', data: state })
-                });
-
-                // 少し待ってからクラウドの最新データを取得
-                await new Promise(resolve => setTimeout(resolve, 1200));
-
-                // 2. クラウドから最新データを取得して統合
-                const res = await fetch(GAS_URL + "?action=getData");
-                const json = await res.json();
-                if (json && json.success && json.data && json.data.cats) {
-                    const remoteData = json.data;
-                    
-                    // クラウド側のデータをベースにしつつ、ローカルで一時保持している未反映の写真や入力を保護
-                    remoteData.cats = remoteData.cats.map(remoteCat => {
-                        const localCat = state.cats.find(c => c.id === remoteCat.id);
-                        if (localCat) {
-                            if (!remoteCat.photo && localCat.photo) {
-                                remoteCat.photo = localCat.photo; // ローカルの写真を保護
-                            }
-                        }
-                        return remoteCat;
-                    });
-
-                    // 新規追加されたローカルの猫がいれば追加
-                    state.cats.forEach(localCat => {
-                        if (!remoteData.cats.some(c => c.id === localCat.id)) {
-                            remoteData.cats.push(localCat);
-                        }
-                    });
-
-                    if (remoteData.handovers && remoteData.handovers.length > 0) {
-                        state.handovers = remoteData.handovers;
-                    }
-                    if (remoteData.facility) {
-                        state.facility = remoteData.facility;
-                    }
-
-                    saveLocal();
-                    renderAll();
-                }
-                showToast("✨ クラウド・Googleドライブと完全同期しました！");
-            } catch (e) {
-                console.error(e);
-                showToast("通信エラー（オフラインの可能性）");
-            } finally {
-                showLoading(false);
-            }
-        }
-
-        async function fetchData() {
-            if (!GAS_URL) return;
-            try {
-                const res = await fetch(GAS_URL + "?action=getData");
-                const json = await res.json();
-                if (json && json.success && json.data && json.data.cats && json.data.cats.length > 0) {
-                    const remoteData = json.data;
-                    remoteData.cats = remoteData.cats.map(remoteCat => {
-                        const localCat = state.cats.find(c => c.id === remoteCat.id);
-                        if (localCat && !remoteCat.photo && localCat.photo) {
-                            remoteCat.photo = localCat.photo;
-                        }
-                        return remoteCat;
-                    });
-                    state = remoteData;
-                    saveLocal();
-                    renderAll();
-                }
-            } catch (e) {
-                console.error(e);
-            }
+        // 4. クラウドデータ保存処理の書き換え
+        function saveToCloud() {
+            localStorage.setItem('withcat_local_backup', JSON.stringify(state));
+            docRef.set(state).catch(err => {
+                console.error("Save to cloud failed:", err);
+                showToast("クラウド保存エラー。再試行してください");
+            });
         }
 
         function switchTab(tab) {
@@ -425,6 +398,13 @@
                 }
             });
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function showToast(msg = "同期しました") {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.remove('hidden');
+            setTimeout(() => t.classList.add('hidden'), 2000);
         }
 
         function renderAll() {
@@ -445,6 +425,7 @@
             document.getElementById('stat-fed').innerText = `${fedCount}/${state.cats.length}`;
         }
 
+        // --- 施設チェック ---
         const facilityItems = [
             { key: 'cleaning', label: '🧹 掃除・消毒' },
             { key: 'water', label: '💧 全室給水' },
@@ -455,7 +436,7 @@
         function renderFacility() {
             const container = document.getElementById('facility-toggles');
             container.innerHTML = facilityItems.map(item => {
-                const checked = state.facility && state.facility[item.key];
+                const checked = state.facility[item.key];
                 return `
                     <button onclick="toggleFacility('${item.key}')" class="py-2 px-1 rounded-lg border text-center transition ${checked ? 'bg-teal-600 text-white border-teal-600 shadow-xs' : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'}">
                         <div>${item.label}</div>
@@ -463,18 +444,17 @@
                     </button>
                 `;
             }).join('');
-            document.getElementById('facility-summary-text').innerText = `💬 施設メモ: ${state.facility && state.facility.memo ? state.facility.memo : 'なし'}`;
+            document.getElementById('facility-summary-text').innerText = `💬 施設メモ: ${state.facility.memo || 'なし'}`;
         }
 
         function toggleFacility(key) {
-            if (!state.facility) state.facility = {};
             state.facility[key] = !state.facility[key];
-            renderAll();
-            saveLocal();
+            saveToCloud();
+            showToast("施設の状態を更新しました");
         }
 
         function openFacilityModal() {
-            document.getElementById('facility-input-text').value = state.facility && state.facility.memo ? state.facility.memo : '';
+            document.getElementById('facility-input-text').value = state.facility.memo || '';
             document.getElementById('facility-modal').classList.remove('hidden');
         }
 
@@ -483,13 +463,13 @@
         }
 
         function saveFacilityStatus() {
-            if (!state.facility) state.facility = {};
             state.facility.memo = document.getElementById('facility-input-text').value;
-            renderAll();
+            saveToCloud();
             closeFacilityModal();
-            saveLocal();
+            showToast("施設メモを保存しました");
         }
 
+        // --- 様子見ピックアップ ---
         function renderPriorityPreview() {
             const container = document.getElementById('priority-cats-preview');
             const careCats = state.cats.filter(c => c.status === 'care');
@@ -510,6 +490,7 @@
             `).join('');
         }
 
+        // --- シフト申し送り ---
         function renderHandoverCatSelect() {
             const sel = document.getElementById('handover-cat-link');
             const currentVal = sel.value;
@@ -540,17 +521,16 @@
             };
 
             state.handovers.unshift(newPost);
-            renderAll();
-            saveLocal();
+            saveToCloud();
             document.getElementById('handover-text').value = '';
             document.getElementById('handover-cat-link').value = '';
-            showToast("申し送りを追加しました（「更新」でクラウドに保存されます）");
+            showToast("申し送りを登録しました");
         }
 
         function renderHandovers() {
             const container = document.getElementById('handover-list');
             if (!state.handovers || state.handovers.length === 0) {
-                container.innerHTML = `<div class="bg-white p-6 rounded-xl text-center text-slate-400 text-xs border border-slate-200">まだ本日の申し送りはありません。</div>`;
+                container.innerHTML = `<div class="bg-white p-6 rounded-xl text-center text-slate-400 text-xs border border-slate-200">まだ本日の申し送りはありません。上のフォームから投稿してください。</div>`;
                 return;
             }
 
@@ -579,11 +559,12 @@
             const target = state.handovers.find(h => h.id === id);
             if (target) {
                 target.reads = (target.reads || 0) + 1;
-                renderAll();
-                saveLocal();
+                saveToCloud();
+                showToast("確認しました");
             }
         }
 
+        // --- お世話カルテ ---
         function setFilter(filter) {
             currentFilter = filter;
             ['all', 'care', 'unfed'].forEach(f => {
@@ -638,6 +619,7 @@
                         </button>
                     </div>
 
+                    <!-- ごはん・トイレのクイックボタン -->
                     <div class="grid grid-cols-2 gap-2 pt-1 border-t border-slate-100 text-[11px]">
                         <div class="bg-slate-50 p-2 rounded-lg border border-slate-100 flex items-center justify-between">
                             <span class="font-bold text-slate-600"><i class="fa-solid fa-bowl-food text-teal-600 mr-1"></i>食欲</span>
@@ -670,11 +652,12 @@
             const cat = state.cats.find(c => c.id === id);
             if (cat) {
                 cat[field] = cat[field] === val ? '' : val;
-                renderAll();
-                saveLocal();
+                saveToCloud();
+                showToast(`${cat.name}の状態を更新しました`);
             }
         }
 
+        // --- 在籍名簿管理 ---
         function renderRoster() {
             const container = document.getElementById('roster-list');
             container.innerHTML = state.cats.map(cat => `
@@ -715,7 +698,7 @@
                 document.getElementById('input-gender').value = cat.gender || '';
                 document.getElementById('input-health').value = cat.health || '';
                 base64PhotoBuffer = cat.photo || '';
-
+                
                 const box = document.getElementById('photo-preview-box');
                 if (cat.photo) {
                     box.innerHTML = `<img src="${cat.photo}" class="w-full h-full object-cover">`;
@@ -739,32 +722,25 @@
             if (file) {
                 const reader = new FileReader();
                 reader.onload = function(e) {
+                    // Firestoreの1MBドキュメント制限を超えないよう画像を軽量リサイズして保持
                     const img = new Image();
                     img.onload = function() {
                         const canvas = document.createElement('canvas');
-                        const MAX_WIDTH = 400;
-                        const MAX_HEIGHT = 400;
+                        const MAX_SIZE = 300;
                         let width = img.width;
                         let height = img.height;
-
                         if (width > height) {
-                            if (width > MAX_WIDTH) {
-                                height *= MAX_WIDTH / width;
-                                width = MAX_WIDTH;
-                            }
+                            if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; }
                         } else {
-                            if (height > MAX_HEIGHT) {
-                                width *= MAX_HEIGHT / height;
-                                height = MAX_HEIGHT;
-                            }
+                            if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; }
                         }
                         canvas.width = width;
                         canvas.height = height;
                         const ctx = canvas.getContext('2d');
                         ctx.drawImage(img, 0, 0, width, height);
-                        base64PhotoBuffer = canvas.toDataURL('image/jpeg', 0.8);
+                        base64PhotoBuffer = canvas.toDataURL('image/jpeg', 0.7);
                         document.getElementById('photo-preview-box').innerHTML = `<img src="${base64PhotoBuffer}" class="w-full h-full object-cover">`;
-                    }
+                    };
                     img.src = e.target.result;
                 }
                 reader.readAsDataURL(file);
@@ -788,6 +764,7 @@
                     cat.health = health;
                     if (base64PhotoBuffer) cat.photo = base64PhotoBuffer;
                 }
+                showToast("猫カルテを更新しました");
             } else {
                 const newCat = {
                     id: Date.now().toString(),
@@ -800,23 +777,33 @@
                     photo: base64PhotoBuffer
                 };
                 state.cats.push(newCat);
+                showToast("新しい猫ちゃんを追加しました");
             }
 
-            renderAll();
+            saveToCloud();
             closeCatModal();
-            saveLocal();
-            showToast("保存しました（「更新」ボタンでGoogleドライブ＆スプレッドシートに反映されます）");
         }
 
         function deleteCat(id) {
-            if (confirm("本当にこの猫ちゃんの名簿データを削除しますか？")) {
-                state.cats = state.cats.filter(c => c.id !== id);
-                renderAll();
-                saveLocal();
-                showToast("削除しました");
-            }
+            pendingDeleteCatId = id;
+            document.getElementById('delete-confirm-modal').classList.remove('hidden');
         }
 
+        function closeDeleteModal() {
+            pendingDeleteCatId = null;
+            document.getElementById('delete-confirm-modal').classList.add('hidden');
+        }
+
+        function confirmDeleteCat() {
+            if (pendingDeleteCatId) {
+                state.cats = state.cats.filter(c => c.id !== pendingDeleteCatId);
+                saveToCloud();
+                showToast("猫ちゃんを削除しました");
+            }
+            closeDeleteModal();
+        }
+
+        // --- LINE用レポートコピー ---
         function copyLineReport() {
             const careCats = state.cats.filter(c => c.status === 'care');
             const latestHandover = state.handovers && state.handovers.length > 0 ? state.handovers[0] : null;
@@ -828,9 +815,9 @@
 
             text += `【施設チェック】\n`;
             facilityItems.forEach(item => {
-                text += `- ${item.label.replace(/^[^\s]+\s/, '')}: ${state.facility && state.facility[item.key] ? '完了✓' : '未'}\n`;
+                text += `- ${item.label.replace(/^[^\s]+\s/, '')}: ${state.facility[item.key] ? '完了✓' : '未'}\n`;
             });
-            text += `💬 施設メモ: ${state.facility && state.facility.memo ? state.facility.memo : 'なし'}\n\n`;
+            text += `💬 施設メモ: ${state.facility.memo || 'なし'}\n\n`;
 
             text += `【本日の様子見・ケア猫 (${careCats.length}頭)】\n`;
             if (careCats.length > 0) {
