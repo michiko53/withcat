@@ -350,7 +350,7 @@
             localStorage.setItem('withcat_local_state', JSON.stringify(state));
         }
 
-        // --- 「更新」ボタンによる手動同期 ---
+        // --- 「更新」ボタンによるスマート同期（写真や新規データを保護するマージ処理） ---
         async function syncWithSheets() {
             if (!GAS_URL) return;
             showLoading(true);
@@ -363,11 +363,32 @@
                     body: JSON.stringify({ action: 'saveData', data: state })
                 });
 
-                // 2. その後、最新データをサーバーから取得
+                // 2. その後、サーバーから最新データを取得
                 const res = await fetch(GAS_URL + "?action=getData");
                 const json = await res.json();
                 if (json && json.success && json.data && json.data.cats && json.data.cats.length > 0) {
-                    state = json.data;
+                    const remoteData = json.data;
+                    
+                    // 賢いマージ：ローカルにある写真データや新規データを上書きで消されないように保護
+                    remoteData.cats = remoteData.cats.map(remoteCat => {
+                        const localCat = state.cats.find(c => c.id === remoteCat.id);
+                        if (localCat) {
+                            // ローカルに写真があってリモートに写真がない場合はローカルの写真を維持
+                            if (!remoteCat.photo && localCat.photo) {
+                                remoteCat.photo = localCat.photo;
+                            }
+                        }
+                        return remoteCat;
+                    });
+
+                    // リモートにないローカル追加猫も保護
+                    state.cats.forEach(localCat => {
+                        if (!remoteData.cats.some(c => c.id === localCat.id)) {
+                            remoteData.cats.push(localCat);
+                        }
+                    });
+
+                    state = remoteData;
                     saveLocal();
                     renderAll();
                 }
@@ -386,7 +407,15 @@
                 const res = await fetch(GAS_URL + "?action=getData");
                 const json = await res.json();
                 if (json && json.success && json.data && json.data.cats && json.data.cats.length > 0) {
-                    state = json.data;
+                    const remoteData = json.data;
+                    remoteData.cats = remoteData.cats.map(remoteCat => {
+                        const localCat = state.cats.find(c => c.id === remoteCat.id);
+                        if (localCat && !remoteCat.photo && localCat.photo) {
+                            remoteCat.photo = localCat.photo;
+                        }
+                        return remoteCat;
+                    });
+                    state = remoteData;
                     saveLocal();
                     renderAll();
                 }
